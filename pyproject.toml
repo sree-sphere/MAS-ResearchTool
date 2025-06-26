@@ -1,0 +1,13 @@
+[project]
+name = "283907663347879-all-task-files"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain>=0.3.26",
+    "langchain-openai>=0.3.25",
+    "langgraph>=0.4.10",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
+]
