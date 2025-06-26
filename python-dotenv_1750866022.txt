@@ -1,0 +1,390 @@
+warning: Indexes specified via `--index-url` will not be persisted to the `pyproject.toml` file; use `--default-index` instead.
+⠋ Resolving dependencies...                                                     ⠙ Resolving dependencies...                                                     ⠋ Resolving dependencies...                                                     ⠙ Resolving dependencies...                                                     ⠋ Resolving dependencies...                                                     ⠙ Resolving dependencies...                                                     ⠙ workspace==0.1.0                                                              ⠹ workspace==0.1.0                                                              ⠹ aiohttp==3.11.16                                                              ⠹ beautifulsoup4==4.13.4                                                        ⠹ docstring-parser==0.16                                                        ⠹ docx2txt==0.9                                                                 ⠹ edge-tts==7.0.2                                                               ⠹ html5lib==1.1                                                                 ⠹ httpx==0.28.1                                                                 ⠸ httpx==0.28.1                                                                 ⠼ httpx==0.28.1                                                                 ⠴ httpx==0.28.1                                                                 ⠦ httpx==0.28.1                                                                 ⠦ langchain==0.3.26                                                             ⠧ langchain==0.3.26                                                             ⠇ langchain==0.3.26                                                             ⠋ langchain==0.3.26                                                             ⠙ langchain==0.3.26                                                             ⠹ langchain==0.3.26                                                             ⠹ langchain-openai==0.3.25                                                      ⠸ langchain-openai==0.3.25                                                      ⠼ langchain-openai==0.3.25                                                      ⠴ langchain-openai==0.3.25                                                      ⠦ langchain-openai==0.3.25                                                      ⠧ langchain-openai==0.3.25                                                      ⠇ langchain-openai==0.3.25                                                      ⠇ langgraph==0.4.9                                                              ⠇ librosa==0.11.0                                                               ⠇ lxml==5.4.0                                                                   ⠇ matplotlib==3.10.3                                                            ⠇ networkx==3.5                                                                 ⠇ nltk==3.9.1                                                                   ⠇ numpy==2.2.6                                                                  ⠇ opencv-python==4.11.0.86                                                      ⠇ numpy==2.2.6                                                                  ⠇ numpy==2.2.6                                                                  ⠇ numpy==2.2.6                                                                  ⠇ numpy==2.2.6                                                                  ⠇ numpy==2.2.6                                                                  ⠇ numpy==2.2.6                                                                  ⠇ numpy==2.2.6                                                                  ⠇ openpyxl==3.1.5                                                               ⠇ pandas==2.3.0                                                                 ⠇ pdfplumber==0.11.7                                                            ⠇ pdfminer-six==20250506                                                        ⠇ pillow==11.2.1                                                                ⠇ pydantic==2.11.7                                                              ⠇ pydantic-core==2.33.2                                                         ⠇ pymupdf==1.26.1                                                               ⠋ openai==1.91.0                                                                ⠙ openai==1.91.0                                                                ⠹ openai==1.91.0                                                                ⠹ tiktoken==0.9.0                                                               ⠸ tiktoken==0.9.0                                                               ⠼ tiktoken==0.9.0                                                               ⠼ langgraph-checkpoint==2.1.0                                                   ⠴ langgraph-checkpoint==2.1.0                                                   ⠦ langgraph-checkpoint==2.1.0                                                   ⠧ langgraph-checkpoint==2.1.0                                                   ⠇ langgraph-checkpoint==2.1.0                                                   ⠇ langgraph-prebuilt==0.2.2                                                     ⠇ langgraph-sdk==0.1.70                                                         ⠇ xxhash==3.5.0                                                                 ⠋ xxhash==3.5.0                                                                 ⠙ xxhash==3.5.0                                                                 ⠹ xxhash==3.5.0                                                                 ⠹ audioread==3.0.1                                                              ⠹ decorator==5.2.1                                                              ⠹ joblib==1.5.1                                                                 ⠹ lazy-loader==0.4                                                              ⠹ msgpack==1.1.1                                                                ⠹ numba==0.61.2                                                                 ⠹ pooch==1.8.2                                                                  ⠹ soxr==0.5.0.post1                                                             ⠹ contourpy==1.3.2                                                              ⠹ cycler==0.12.1                                                                ⠹ fonttools==4.58.4                                                             ⠹ kiwisolver==1.4.8                                                             ⠹ packaging==24.2                                                               ⠹ pyparsing==3.2.3                                                              ⠹ python-dateutil==2.9.0.post0                                                  ⠹ click==8.2.1                                                                  ⠹ regex==2024.11.6                                                              ⠹ tqdm==4.67.1                                                                  ⠹ et-xmlfile==2.0.0                                                             ⠹ pytz==2025.2                                                                  ⠹ tzdata==2025.2                                                                ⠸ pycparser==2.22                                                               ⠼ pycparser==2.22                                                               ⠼ jsonpointer==3.0.0                                                            ⠼ workspace==0.1.0                                                              ⠼ aiohttp==3.11.16                                                              ⠼ beautifulsoup4==4.13.4                                                        ⠼ docstring-parser==0.16                                                        ⠼ docx2txt==0.9                                                                 ⠼ edge-tts==7.0.2                                                               Resolved 115 packages in 6.18s
+⠋ Resolving dependencies...                                                     ⠙ Resolving dependencies...                                                     ⠋ Resolving dependencies...                                                     ⠙ Resolving dependencies...                                                     ⠋ Resolving dependencies...                                                     ⠙ Resolving dependencies...                                                     ⠙ workspace==0.1.0                                                              ⠙ aiohttp==3.11.16                                                              ⠙ beautifulsoup4==4.13.4                                                        ⠙ docstring-parser==0.16                                                        ⠙ docx2txt==0.9                                                                 ⠙ edge-tts==7.0.2                                                               ⠙ html5lib==1.1                                                                 ⠙ httpx==0.28.1                                                                 ⠙ langchain==0.3.26                                                             ⠙ langchain-openai==0.3.25                                                      ⠙ langgraph==0.4.9                                                              ⠙ librosa==0.11.0                                                               ⠙ lxml==5.4.0                                                                   ⠙ matplotlib==3.10.3                                                            ⠙ networkx==3.5                                                                 ⠙ nltk==3.9.1                                                                   ⠙ numpy==2.2.6                                                                  ⠙ opencv-python==4.11.0.86                                                      ⠋ Preparing packages... (0/0)                                                   ⠋ Preparing packages... (0/25)                                                  ⠙ Preparing packages... (0/25)                                                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)                                                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+python-dotenv ------------------------------     0 B/20.07 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+python-dotenv ------------------------------ 8.00 KiB/20.07 KiB                    Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+python-dotenv ------------------------------ 8.00 KiB/20.07 KiB
+langchain  ------------------------------     0 B/988.61 KiB                       Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+python-dotenv ------------------------------ 8.00 KiB/20.07 KiB
+langchain  ------------------------------ 8.00 KiB/988.61 KiB                      Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+python-dotenv ------------------------------ 16.00 KiB/20.07 KiB
+langchain  ------------------------------ 8.00 KiB/988.61 KiB                      Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+python-dotenv ------------------------------ 16.00 KiB/20.07 KiB
+langchain  ------------------------------ 16.00 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+python-dotenv ------------------------------ 20.07 KiB/20.07 KiB
+langchain  ------------------------------ 16.00 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+python-dotenv ------------------------------ 20.07 KiB/20.07 KiB
+langchain  ------------------------------ 24.00 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langchain  ------------------------------ 24.00 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langchain  ------------------------------ 31.26 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langgraph  ------------------------------     0 B/148.91 KiB
+langchain  ------------------------------ 31.26 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langgraph  ------------------------------ 8.00 KiB/148.91 KiB
+langchain  ------------------------------ 31.26 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langgraph  ------------------------------ 16.00 KiB/148.91 KiB
+langchain  ------------------------------ 31.26 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langchain-openai ------------------------------     0 B/67.55 KiB
+langgraph  ------------------------------ 16.00 KiB/148.91 KiB
+langchain  ------------------------------ 31.26 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langchain-openai ------------------------------ 8.00 KiB/67.55 KiB
+langgraph  ------------------------------ 16.00 KiB/148.91 KiB
+langchain  ------------------------------ 31.26 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langchain-openai ------------------------------ 8.00 KiB/67.55 KiB
+langgraph  ------------------------------ 16.00 KiB/148.91 KiB
+langchain-core ------------------------------     0 B/428.59 KiB
+langchain  ------------------------------ 31.26 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langchain-openai ------------------------------ 8.00 KiB/67.55 KiB
+langgraph  ------------------------------ 16.00 KiB/148.91 KiB
+langchain-core ------------------------------ 8.00 KiB/428.59 KiB
+langchain  ------------------------------ 31.26 KiB/988.61 KiB                     Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+jsonpointer ------------------------------ 7.42 KiB/7.42 KiB
+jsonpatch  ------------------------------ 12.60 KiB/12.60 KiB
+distro     ------------------------------ 8.00 KiB/19.80 KiB
+langgraph-prebuilt ------------------------------ 23.19 KiB/23.19 KiB
+tenacity   ------------------------------ 16.00 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 24.00 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 16.00 KiB/42.82 KiB
+langgraph-sdk ------------------------------ 39.26 KiB/48.81 KiB
+requests-toolbelt ------------------------------ 16.00 KiB/53.20 KiB
+packaging  ------------------------------ 24.00 KiB/63.92 KiB
+langchain-openai ------------------------------ 67.55 KiB/67.55 KiB
+orjson     ------------------------------ 16.00 KiB/130.01 KiB
+langgraph  ------------------------------ 47.26 KiB/148.91 KiB
+jiter      ------------------------------ 95.23 KiB/343.79 KiB
+langsmith  ------------------------------ 24.00 KiB/359.10 KiB
+langchain-core ------------------------------ 24.00 KiB/428.59 KiB
+openai     ------------------------------ 31.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 16.00 KiB/1.14 MiB
+sqlalchemy ------------------------------ 8.00 KiB/3.15 MiB
+zstandard  ------------------------------ 8.00 KiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+jsonpointer ------------------------------ 7.42 KiB/7.42 KiB
+jsonpatch  ------------------------------ 12.60 KiB/12.60 KiB
+distro     ------------------------------ 16.00 KiB/19.80 KiB
+langgraph-prebuilt ------------------------------ 23.19 KiB/23.19 KiB
+tenacity   ------------------------------ 16.00 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 24.00 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 16.00 KiB/42.82 KiB
+langgraph-sdk ------------------------------ 39.26 KiB/48.81 KiB
+requests-toolbelt ------------------------------ 16.00 KiB/53.20 KiB
+packaging  ------------------------------ 31.27 KiB/63.92 KiB
+orjson     ------------------------------ 16.00 KiB/130.01 KiB
+langgraph  ------------------------------ 55.26 KiB/148.91 KiB
+jiter      ------------------------------ 127.23 KiB/343.79 KiB
+langsmith  ------------------------------ 24.00 KiB/359.10 KiB
+langchain-core ------------------------------ 31.26 KiB/428.59 KiB
+openai     ------------------------------ 39.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 16.00 KiB/1.14 MiB
+sqlalchemy ------------------------------ 16.00 KiB/3.15 MiB
+zstandard  ------------------------------ 8.00 KiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+jsonpointer ------------------------------ 7.42 KiB/7.42 KiB
+distro     ------------------------------ 16.00 KiB/19.80 KiB
+langgraph-prebuilt ------------------------------ 23.19 KiB/23.19 KiB
+tenacity   ------------------------------ 24.00 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 31.25 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 16.00 KiB/42.82 KiB
+langgraph-sdk ------------------------------ 47.26 KiB/48.81 KiB
+requests-toolbelt ------------------------------ 16.00 KiB/53.20 KiB
+packaging  ------------------------------ 47.27 KiB/63.92 KiB
+orjson     ------------------------------ 24.00 KiB/130.01 KiB
+langgraph  ------------------------------ 55.26 KiB/148.91 KiB
+jiter      ------------------------------ 191.23 KiB/343.79 KiB
+langsmith  ------------------------------ 24.00 KiB/359.10 KiB
+langchain-core ------------------------------ 39.26 KiB/428.59 KiB
+openai     ------------------------------ 39.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 191.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 16.00 KiB/3.15 MiB
+zstandard  ------------------------------ 8.00 KiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+jsonpointer ------------------------------ 7.42 KiB/7.42 KiB
+distro     ------------------------------ 16.00 KiB/19.80 KiB
+tenacity   ------------------------------ 24.00 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 31.25 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 16.00 KiB/42.82 KiB
+langgraph-sdk ------------------------------ 47.26 KiB/48.81 KiB
+requests-toolbelt ------------------------------ 16.00 KiB/53.20 KiB
+packaging  ------------------------------ 47.27 KiB/63.92 KiB
+orjson     ------------------------------ 24.00 KiB/130.01 KiB
+langgraph  ------------------------------ 55.26 KiB/148.91 KiB
+jiter      ------------------------------ 191.23 KiB/343.79 KiB
+langsmith  ------------------------------ 24.00 KiB/359.10 KiB
+langchain-core ------------------------------ 39.26 KiB/428.59 KiB
+openai     ------------------------------ 47.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 191.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 16.00 KiB/3.15 MiB
+zstandard  ------------------------------ 8.00 KiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+jsonpointer ------------------------------ 7.42 KiB/7.42 KiB
+distro     ------------------------------ 19.80 KiB/19.80 KiB
+tenacity   ------------------------------ 27.59 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 31.25 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 31.25 KiB/42.82 KiB
+requests-toolbelt ------------------------------ 24.00 KiB/53.20 KiB
+packaging  ------------------------------ 63.27 KiB/63.92 KiB
+orjson     ------------------------------ 119.22 KiB/130.01 KiB
+langgraph  ------------------------------ 55.26 KiB/148.91 KiB
+jiter      ------------------------------ 343.79 KiB/343.79 KiB
+langsmith  ------------------------------ 31.25 KiB/359.10 KiB
+langchain-core ------------------------------ 47.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 431.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 55.24 KiB/3.15 MiB
+zstandard  ------------------------------ 968.57 KiB/5.18 MiB                      Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+jsonpointer ------------------------------ 7.42 KiB/7.42 KiB
+distro     ------------------------------ 19.80 KiB/19.80 KiB
+tenacity   ------------------------------ 27.59 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 31.25 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 31.25 KiB/42.82 KiB
+requests-toolbelt ------------------------------ 24.00 KiB/53.20 KiB
+packaging  ------------------------------ 63.27 KiB/63.92 KiB
+orjson     ------------------------------ 119.22 KiB/130.01 KiB
+langgraph  ------------------------------ 71.26 KiB/148.91 KiB
+langsmith  ------------------------------ 39.25 KiB/359.10 KiB
+langchain-core ------------------------------ 47.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 479.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 63.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.07 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+jsonpointer ------------------------------ 7.42 KiB/7.42 KiB
+tenacity   ------------------------------ 27.59 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 31.25 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 31.25 KiB/42.82 KiB
+requests-toolbelt ------------------------------ 24.00 KiB/53.20 KiB
+packaging  ------------------------------ 63.27 KiB/63.92 KiB
+orjson     ------------------------------ 119.22 KiB/130.01 KiB
+langgraph  ------------------------------ 71.26 KiB/148.91 KiB
+langsmith  ------------------------------ 39.25 KiB/359.10 KiB
+langchain-core ------------------------------ 47.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 479.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 63.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.07 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+tenacity   ------------------------------ 27.59 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 31.25 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 31.25 KiB/42.82 KiB
+requests-toolbelt ------------------------------ 24.00 KiB/53.20 KiB
+packaging  ------------------------------ 63.27 KiB/63.92 KiB
+orjson     ------------------------------ 119.22 KiB/130.01 KiB
+langgraph  ------------------------------ 71.26 KiB/148.91 KiB
+langsmith  ------------------------------ 39.25 KiB/359.10 KiB
+langchain-core ------------------------------ 47.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 479.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 63.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.07 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+tenacity   ------------------------------ 27.59 KiB/27.59 KiB
+langchain-text-splitters ------------------------------ 31.25 KiB/31.68 KiB
+langgraph-checkpoint ------------------------------ 39.25 KiB/42.82 KiB
+requests-toolbelt ------------------------------ 24.00 KiB/53.20 KiB
+packaging  ------------------------------ 63.27 KiB/63.92 KiB
+langgraph  ------------------------------ 79.26 KiB/148.91 KiB
+langsmith  ------------------------------ 39.25 KiB/359.10 KiB
+langchain-core ------------------------------ 47.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 479.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 63.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.07 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+tenacity   ------------------------------ 27.59 KiB/27.59 KiB
+langgraph-checkpoint ------------------------------ 39.25 KiB/42.82 KiB
+requests-toolbelt ------------------------------ 24.00 KiB/53.20 KiB
+packaging  ------------------------------ 63.27 KiB/63.92 KiB
+langgraph  ------------------------------ 79.26 KiB/148.91 KiB
+langsmith  ------------------------------ 47.25 KiB/359.10 KiB
+langchain-core ------------------------------ 47.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 479.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 71.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.34 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langgraph-checkpoint ------------------------------ 39.25 KiB/42.82 KiB
+requests-toolbelt ------------------------------ 24.00 KiB/53.20 KiB
+packaging  ------------------------------ 63.27 KiB/63.92 KiB
+langgraph  ------------------------------ 79.26 KiB/148.91 KiB
+langsmith  ------------------------------ 55.25 KiB/359.10 KiB
+langchain-core ------------------------------ 47.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 479.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 79.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.34 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langgraph-checkpoint ------------------------------ 39.25 KiB/42.82 KiB
+requests-toolbelt ------------------------------ 24.00 KiB/53.20 KiB
+langgraph  ------------------------------ 87.26 KiB/148.91 KiB
+langsmith  ------------------------------ 55.25 KiB/359.10 KiB
+langchain-core ------------------------------ 55.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 39.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 615.21 KiB/1.14 MiB
+sqlalchemy ------------------------------ 111.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.46 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+requests-toolbelt ------------------------------ 31.26 KiB/53.20 KiB
+langgraph  ------------------------------ 103.26 KiB/148.91 KiB
+langsmith  ------------------------------ 111.25 KiB/359.10 KiB
+langchain-core ------------------------------ 55.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 47.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 1.10 MiB/1.14 MiB
+sqlalchemy ------------------------------ 151.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.56 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+requests-toolbelt ------------------------------ 31.26 KiB/53.20 KiB
+langgraph  ------------------------------ 103.26 KiB/148.91 KiB
+langsmith  ------------------------------ 111.25 KiB/359.10 KiB
+langchain-core ------------------------------ 55.26 KiB/428.59 KiB
+openai     ------------------------------ 55.27 KiB/718.59 KiB
+langchain  ------------------------------ 47.26 KiB/988.61 KiB
+tiktoken   ------------------------------ 1.10 MiB/1.14 MiB
+sqlalchemy ------------------------------ 175.24 KiB/3.15 MiB
+zstandard  ------------------------------ 1.76 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+requests-toolbelt ------------------------------ 39.26 KiB/53.20 KiB
+langgraph  ------------------------------ 111.26 KiB/148.91 KiB
+langsmith  ------------------------------ 127.25 KiB/359.10 KiB
+langchain-core ------------------------------ 63.26 KiB/428.59 KiB
+openai     ------------------------------ 63.27 KiB/718.59 KiB
+langchain  ------------------------------ 47.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 183.24 KiB/3.15 MiB
+zstandard  ------------------------------ 2.56 MiB/5.18 MiB                        Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+requests-toolbelt ------------------------------ 53.20 KiB/53.20 KiB
+langgraph  ------------------------------ 127.26 KiB/148.91 KiB
+langsmith  ------------------------------ 247.25 KiB/359.10 KiB
+langchain-core ------------------------------ 79.26 KiB/428.59 KiB
+openai     ------------------------------ 71.27 KiB/718.59 KiB
+langchain  ------------------------------ 47.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 343.24 KiB/3.15 MiB                      Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langgraph  ------------------------------ 135.26 KiB/148.91 KiB
+langsmith  ------------------------------ 295.25 KiB/359.10 KiB
+langchain-core ------------------------------ 79.26 KiB/428.59 KiB
+openai     ------------------------------ 71.27 KiB/718.59 KiB
+langchain  ------------------------------ 47.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 351.24 KiB/3.15 MiB                      Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langgraph  ------------------------------ 143.26 KiB/148.91 KiB
+langsmith  ------------------------------ 343.25 KiB/359.10 KiB
+langchain-core ------------------------------ 95.26 KiB/428.59 KiB
+openai     ------------------------------ 79.27 KiB/718.59 KiB
+langchain  ------------------------------ 47.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 447.24 KiB/3.15 MiB                      Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langsmith  ------------------------------ 343.25 KiB/359.10 KiB
+langchain-core ------------------------------ 111.26 KiB/428.59 KiB
+openai     ------------------------------ 79.27 KiB/718.59 KiB
+langchain  ------------------------------ 55.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 511.24 KiB/3.15 MiB                      Building workspace @ file:///workspace
+⠙ Preparing packages... (0/25)
+langchain-core ------------------------------ 127.26 KiB/428.59 KiB
+openai     ------------------------------ 87.27 KiB/718.59 KiB
+langchain  ------------------------------ 55.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 527.24 KiB/3.15 MiB                      Building workspace @ file:///workspace
+⠹ Preparing packages... (18/25)
+langchain-core ------------------------------ 287.26 KiB/428.59 KiB
+openai     ------------------------------ 207.27 KiB/718.59 KiB
+langchain  ------------------------------ 111.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 775.24 KiB/3.15 MiB                      Building workspace @ file:///workspace
+⠹ Preparing packages... (18/25)
+openai     ------------------------------ 279.27 KiB/718.59 KiB
+langchain  ------------------------------ 143.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 2.29 MiB/3.15 MiB                        Building workspace @ file:///workspace
+⠹ Preparing packages... (18/25)
+openai     ------------------------------ 359.27 KiB/718.59 KiB
+langchain  ------------------------------ 287.26 KiB/988.61 KiB
+sqlalchemy ------------------------------ 3.08 MiB/3.15 MiB                        Building workspace @ file:///workspace
+⠹ Preparing packages... (18/25)
+openai     ------------------------------ 375.27 KiB/718.59 KiB
+langchain  ------------------------------ 303.26 KiB/988.61 KiB                    Building workspace @ file:///workspace
+⠹ Preparing packages... (18/25)
+openai     ------------------------------ 543.27 KiB/718.59 KiB
+langchain  ------------------------------ 439.26 KiB/988.61 KiB                    Building workspace @ file:///workspace
+⠹ Preparing packages... (18/25)
+langchain  ------------------------------ 543.26 KiB/988.61 KiB                    Building workspace @ file:///workspace
+⠹ Preparing packages... (18/25)
+langchain  ------------------------------ 767.26 KiB/988.61 KiB                    Building workspace @ file:///workspace
+⠹ Preparing packages... (18/25)                                                    Building workspace @ file:///workspace
+⠸ Preparing packages... (22/25)                                                    Building workspace @ file:///workspace
+⠸ Preparing packages... (22/25)
+xxhash     ------------------------------     0 B/189.82 KiB                       Building workspace @ file:///workspace
+⠸ Preparing packages... (22/25)                                                    Building workspace @ file:///workspace
+⠼ Preparing packages... (23/25)                                                    Building workspace @ file:///workspace
+⠴ Preparing packages... (23/25)                                                       Built workspace @ file:///workspace
+⠴ Preparing packages... (23/25)                                                 ⠦ Preparing packages... (24/25)                                                 ⠧ Preparing packages... (24/25)                                                 ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------     0 B/211.67 KiB                    ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 8.00 KiB/211.67 KiB                   ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 16.00 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 24.00 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 31.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 39.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 47.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 55.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 63.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 71.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 79.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 87.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)
+ormsgpack  ------------------------------ 95.20 KiB/211.67 KiB                  ⠧ Preparing packages... (24/25)                                                 Prepared 25 packages in 1.32s
+Uninstalled 2 packages in 0.99ms
+░░░░░░░░░░░░░░░░░░░░ [0/0] Installing wheels...                                 ░░░░░░░░░░░░░░░░░░░░ [0/26] Installing wheels...                                ░░░░░░░░░░░░░░░░░░░░ [0/26] python-dotenv==1.1.1                                ░░░░░░░░░░░░░░░░░░░░ [1/26] python-dotenv==1.1.1                                ░░░░░░░░░░░░░░░░░░░░ [1/26] langchain-openai==0.3.25                            █░░░░░░░░░░░░░░░░░░░ [2/26] langchain-openai==0.3.25                            █░░░░░░░░░░░░░░░░░░░ [2/26] jsonpatch==1.33                                     ██░░░░░░░░░░░░░░░░░░ [3/26] jsonpatch==1.33                                     ██░░░░░░░░░░░░░░░░░░ [3/26] langgraph-prebuilt==0.2.2                           ███░░░░░░░░░░░░░░░░░ [4/26] langgraph-prebuilt==0.2.2                           ███░░░░░░░░░░░░░░░░░ [4/26] langgraph-sdk==0.1.70                               ███░░░░░░░░░░░░░░░░░ [5/26] langgraph-sdk==0.1.70                               ███░░░░░░░░░░░░░░░░░ [5/26] jiter==0.10.0                                       ████░░░░░░░░░░░░░░░░ [6/26] jiter==0.10.0                                       ████░░░░░░░░░░░░░░░░ [6/26] distro==1.9.0                                       █████░░░░░░░░░░░░░░░ [7/26] distro==1.9.0                                       █████░░░░░░░░░░░░░░░ [7/26] jsonpointer==3.0.0                                  ██████░░░░░░░░░░░░░░ [8/26] jsonpointer==3.0.0                                  ██████░░░░░░░░░░░░░░ [8/26] orjson==3.10.18                                     ██████░░░░░░░░░░░░░░ [9/26] orjson==3.10.18                                     ███████████████████░ [25/26] greenlet==3.2.3                                    ████████████████████ [26/26] greenlet==3.2.3                                    Installed 26 packages in 188ms
+ + distro==1.9.0
+ + greenlet==3.2.3
+ + jiter==0.10.0
+ + jsonpatch==1.33
+ + jsonpointer==3.0.0
+ + langchain==0.3.26
+ + langchain-core==0.3.66
+ + langchain-openai==0.3.25
+ + langchain-text-splitters==0.3.8
+ + langgraph==0.4.9
+ + langgraph-checkpoint==2.1.0
+ + langgraph-prebuilt==0.2.2
+ + langgraph-sdk==0.1.70
+ + langsmith==0.4.2
+ + openai==1.91.0
+ + orjson==3.10.18
+ + ormsgpack==1.10.0
+ - packaging==25.0
+ + packaging==24.2
+ + python-dotenv==1.1.1
+ + requests-toolbelt==1.0.0
+ + sqlalchemy==2.0.41
+ + tenacity==9.1.2
+ + tiktoken==0.9.0
+ ~ workspace==0.1.0 (from file:///workspace)
+ + xxhash==3.5.0
+ + zstandard==0.23.0
