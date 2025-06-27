@@ -1,10 +1,8 @@
 """
 Multi-Agent Research & Content Pipeline
-A sophisticated multi-agent system for automated research, fact-checking, and content generation.
 
 Author: sree-sphere
-Description: Enterprise-grade multi-agent system using LangGraph for orchestrating
-            research, analysis, and content creation workflows.
+Description: Multi-agent system (MAS) using LangGraph for orchestrating research, analysis, and content creation workflows.
 """
 
 import asyncio
@@ -23,13 +21,7 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 load_dotenv()
 
-from src.multi_agent_system import (
-    ResearchPipeline,
-    ResearchRequest,
-    PipelineStatus,
-    AgentMetrics,
-    ContentOutput
-)
+from src.multi_agent_system import (ResearchPipeline, ResearchRequest, PipelineStatus, AgentMetrics, ContentOutput)
 
 # Logger config
 logging.basicConfig(
@@ -72,9 +64,8 @@ class PipelineRequest(BaseModel):
     """Request model for pipeline execution"""
     topic: str = Field(..., description="Research topic", min_length=3, max_length=200)
     depth: str = Field(default="standard", description="Research depth: basic, standard, deep")
-    content_types: List[str] = Field(
-        default=["summary", "report"], 
-        description="Content types to generate"
+    content_types: List[str] = Field(default=["summary", "report"], description="Content types to generate"
+    #, min_items=1, max_items=4, example=["summary", "report", "presentation", "blog_post"]
     )
     target_audience: str = Field(default="general", description="Target audience level")
     max_sources: int = Field(default=10, ge=3, le=50, description="Maximum sources to research")
@@ -99,18 +90,14 @@ async def root():
     }
 
 @app.post("/research/start", response_model=PipelineResponse)
-async def start_research_pipeline(
-    request: PipelineRequest,
-    background_tasks: BackgroundTasks
-):
+async def start_research_pipeline(request: PipelineRequest, background_tasks: BackgroundTasks):
     """Start a new research pipeline"""
     try:
         # 1. Generate unique pipeline ID
-        pipeline_id = (
-            "pipeline_" +
-            datetime.now().strftime("%Y%m%d_%H%M%S") +
-            f"_{hash(request.topic) % 10000}"
-        )
+        pipeline_id = ("pipeline_" + datetime.now().strftime("%Y%m%d_%H%M%S") + f"_{hash(request.topic) % 10000}")
+        # pipeline_id = pipeline_id.replace(" ", "_").lower()
+        if pipeline_id in active_pipelines:
+            raise HTTPException(status_code=400, detail="Pipeline already exists with this ID")
         
         # 2. Prepare the research request object
         research_request = ResearchRequest(
@@ -135,11 +122,7 @@ async def start_research_pipeline(
         }
         
         # 4. Kick off the background pipeline
-        background_tasks.add_task(
-            execute_pipeline,
-            pipeline_id,
-            research_request
-        )
+        background_tasks.add_task(execute_pipeline, pipeline_id, research_request)
         
         logger.info(f"Started research pipeline {pipeline_id} for topic: {request.topic}")
         
