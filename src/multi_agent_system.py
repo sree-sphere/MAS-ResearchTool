@@ -1,6 +1,6 @@
 """
-Advanced Multi-Agent System using LangGraph and LangChain
-Implements a sophisticated research and content generation pipeline with multiple AI agents.
+Multi-Agent System using LangGraph and LangChain
+Implements a research and content generation pipeline with multiple AI agents.
 
 This system demonstrates:
 - Agent orchestration with LangGraph
@@ -247,10 +247,7 @@ class ResearchAgent(BaseAgent):
                         safesearch='moderate'
                     ))
                 elif backend == "news":
-                    search_results = list(self.ddgs.news(
-                        keywords=clean_query,
-                        max_results=self.max_results_per_query
-                    ))
+                    search_results = list(self.ddgs.news(keywords=clean_query, max_results=self.max_results_per_query))
                 
                 # Parse results
                 parsed_results = []
@@ -320,11 +317,15 @@ class ResearchAgent(BaseAgent):
         )
         
         num_queries = {"basic": 3, "standard": 5, "deep": 7, "comprehensive": 10}.get(depth, 5)
-        
-        response = await self.llm.ainvoke(
-            prompt.format_messages(topic=topic, depth=depth, num_queries=num_queries)
-        )
-        
+
+        response = await self.llm.ainvoke(prompt.format_messages(topic=topic, depth=depth, num_queries=num_queries))
+        # if not response or not response.content.strip():
+        #     logger.warning("No queries generated, using default fallback")
+        #     return [
+        #         f"{topic} overview",
+        #         f"{topic} applications",
+        #         f"{topic} recent developments"
+        #     ][:num_queries]
         queries = [q.strip().replace('"', '') for q in response.content.split('\n') if q.strip()]
         return queries[:num_queries]
     
@@ -407,9 +408,7 @@ class ResearchAgent(BaseAgent):
         
         for result in results:
             try:
-                response = await self.llm.ainvoke(
-                    prompt.format_messages(topic=topic, content=result.content[:500])
-                )
+                response = await self.llm.ainvoke(prompt.format_messages(topic=topic, content=result.content[:500]))
                 relevance = float(response.content.strip())
                 result.relevance_score = max(0.0, min(1.0, relevance))
             except Exception as e:
@@ -513,10 +512,8 @@ class FactCheckingAgent(BaseAgent):
             
             Return each claim on a separate line, no numbering."""
         )
-        
-        response = await self.llm.ainvoke(
-            prompt.format_messages(content=all_content[:3000])
-        )
+
+        response = await self.llm.ainvoke(prompt.format_messages(content=all_content[:3000]))
         
         claims = [c.strip() for c in response.content.split('\n') if c.strip()]
         return claims[:10]
@@ -537,9 +534,7 @@ class FactCheckingAgent(BaseAgent):
             )
             
             try:
-                response = await self.llm.ainvoke(
-                    prompt.format_messages(claim=claim, content=source.content[:800])
-                )
+                response = await self.llm.ainvoke(prompt.format_messages(claim=claim, content=source.content[:800]))
                 
                 verdict = response.content.strip().upper()
                 if verdict == "SUPPORTS":
@@ -700,11 +695,7 @@ class ContentGenerationAgent(BaseAgent):
             logger.warning(f"Unknown content type: {content_type}")
             return None
     
-    def _prepare_verified_info(
-        self, 
-        research_results: List[ResearchResult],
-        fact_check_results: Dict[str, Any]
-    ) -> str:
+    def _prepare_verified_info(self, research_results: List[ResearchResult],fact_check_results: Dict[str, Any]) -> str:
         """Prepare verified information for content generation"""
         verified_content = []
         
@@ -1342,10 +1333,7 @@ class ResearchPipeline:
             role.value: {
                 "status": agent.metrics.current_status,
                 "total_executions": agent.metrics.total_executions,
-                "success_rate": (
-                    agent.metrics.successful_executions / agent.metrics.total_executions 
-                    if agent.metrics.total_executions > 0 else 0.0
-                ),
+                "success_rate": (agent.metrics.successful_executions / agent.metrics.total_executions if agent.metrics.total_executions > 0 else 0.0),
                 "avg_execution_time": agent.metrics.avg_execution_time,
                 "last_execution": agent.metrics.last_execution.isoformat() if agent.metrics.last_execution else None
             }

@@ -2,7 +2,7 @@
 
 Built a multi-agent system using **LangChain**, **LangGraph**, and **Pydantic** with **ChatGPT/Anthropic** as the underlying language model. Inclusive of automated research, fact-checking, and content creation workflows via modular AI agents.
 
-## 🚀 Features
+## Features
 
 - **Multi-Agent Coordination by Tool Calling**: Research and Writing agents working together
    1. **Research Agent**: Discovers and summarizes high-quality sources on your topic.
@@ -17,7 +17,7 @@ Built a multi-agent system using **LangChain**, **LangGraph**, and **Pydantic** 
 - **Streamlit Dashboard**: User-friendly UI to orchestrate pipelines without writing code.
 - **Comprehensive Logging**: Timestamped logs to both console and logs/research_pipeline.log.
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌───────────────────┐       ┌─────────────────────────┐
@@ -77,6 +77,12 @@ MAS-ResearchTool/
    ```
 
 3. **Install Dependencies**
+   Using uv
+   ```bash
+   uv pip install -r requirements.txt
+   uv pip install -e .
+   ```
+   Using pip
    ```bash
    pip install --upgrade pip
    pip install -r requirements.txt
@@ -84,7 +90,7 @@ MAS-ResearchTool/
 
 4. **Set up OpenAI API Key** (Or Anthropic. API_URL is optional)
    ```bash
-   cp .env
+   cp .env.example .env
    export OPENAI_API_KEY=<openai_key>
    export ANTHROPIC_API_KEY= <anthropic_key>
    export API_URL=http://localhost:8000
