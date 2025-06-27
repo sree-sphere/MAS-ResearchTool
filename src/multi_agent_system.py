@@ -1,4 +1,4 @@
-"""main
+"""
 Advanced Multi-Agent System using LangGraph and LangChain
 Implements a sophisticated research and content generation pipeline with multiple AI agents.
 
