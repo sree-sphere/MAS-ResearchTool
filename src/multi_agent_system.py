@@ -26,11 +26,10 @@ from langchain_anthropic import ChatAnthropic
 from duckduckgo_search import DDGS
 from langchain_community.utilities import WikipediaAPIWrapper
 from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolExecutor
+# from langgraph.prebuilt import ToolExecutor
 from pydantic import BaseModel, Field, validator
 from typing_extensions import TypedDict
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
 class AgentRole(str, Enum):
@@ -135,8 +134,8 @@ class BaseAgent:
                 max_tokens=2000
             )
         else:
-            # Fallback to OpenAI
-            return ChatOpenAI(model="gpt-4o", temperature=0.3)
+            # Fallback
+            return ChatOpenAI(model="gpt-4-0613", temperature=0.3)
     
     async def execute(self, state: PipelineState) -> PipelineState:
         """Execute agent logic - to be implemented by subclasses"""
@@ -166,7 +165,7 @@ class ResearchAgent(BaseAgent):
     
     def __init__(self, llm_provider: str = "openai"):
         super().__init__(AgentRole.RESEARCHER, llm_provider)
-        # Initialize search tools
+        # Search tools init
         self.ddgs = DDGS()
         self.wikipedia_tool = WikipediaAPIWrapper(top_k_results=3)
         self.max_results_per_query = 3
@@ -860,12 +859,15 @@ class ContentGenerationAgent(BaseAgent):
         )
         
         content = response.content.strip()
+        slide_lines = [l for l in content.split("\n") if l.startswith("SLIDE")]
+        summary = f"Presentation covering {request.topic} with {len(slide_lines)} slides"
+
         
         return ContentOutput(
             content_type="presentation",
             title=f"Presentation: {request.topic}",
             content=content,
-            summary=f"Presentation covering {request.topic} with {len([l for l in content.split('\n') if l.startswith('SLIDE')])} slides",
+            summary=summary,
             word_count=len(content.split()),
             readability_score=self._calculate_readability(content),
             sources_used=self._extract_sources(verified_info)
@@ -1248,7 +1250,7 @@ class ResearchPipeline:
     ) -> Optional[ContentOutput]:
         """Execute the complete research pipeline"""
         
-        # Initialize state
+        # State init
         initial_state: PipelineState = {
             "request": request,
             "research_results": [],
