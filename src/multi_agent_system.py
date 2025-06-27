@@ -13,7 +13,6 @@ This system demonstrates:
 import asyncio
 import json
 import logging
-import os
 import time
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Callable, Union
@@ -23,15 +22,14 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
-from langchain_community.tools import DuckDuckGoSearchResults
+# from langchain_community.tools import DuckDuckGoSearchResults
 from duckduckgo_search import DDGS
 from langchain_community.utilities import WikipediaAPIWrapper
 from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolExecutor
+# from langgraph.prebuilt import ToolExecutor
 from pydantic import BaseModel, Field, validator
 from typing_extensions import TypedDict
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
 class AgentRole(str, Enum):
@@ -136,8 +134,8 @@ class BaseAgent:
                 max_tokens=2000
             )
         else:
-            # Fallback to OpenAI
-            return ChatOpenAI(model="gpt-3.5-turbo", temperature=0.3)
+            # Fallback
+            return ChatOpenAI(model="gpt-4-0613", temperature=0.3)
     
     async def execute(self, state: PipelineState) -> PipelineState:
         """Execute agent logic - to be implemented by subclasses"""
@@ -167,12 +165,12 @@ class ResearchAgent(BaseAgent):
     
     def __init__(self, llm_provider: str = "openai"):
         super().__init__(AgentRole.RESEARCHER, llm_provider)
-        # Initialize search tools
+        # Search tools init
         self.ddgs = DDGS()
         self.wikipedia_tool = WikipediaAPIWrapper(top_k_results=3)
         self.max_results_per_query = 3
-        self.search_backends = ["text", "news"]  # Multiple DuckDuckGo backends
-        self.backoff_times = [1, 2, 4]  # Exponential backoff times
+        self.search_backends = ["text", "news"]  # Multiple DuckDuckGo backends upon testing
+        self.backoff_times = [1, 2, 4]  # Exponential backoff times for search retries
         
     async def execute(self, state: PipelineState) -> PipelineState:
         """Execute research tasks"""
@@ -199,7 +197,7 @@ class ResearchAgent(BaseAgent):
                         wiki_results = await self._wikipedia_search(query)
                         research_results.extend(wiki_results)
                     elif i < 3:
-                        # Fallback to wikipedia for user's topic if query is not entity-based
+                        # Fallback to Wikipedia for user's topic if query is not entity-based
                         logger.info(f"Query '{query}' not entity-based, performing Wikipedia search")
                         wiki_results = await self._wikipedia_search(request.topic)
                         research_results.extend(wiki_results)
@@ -367,7 +365,7 @@ class ResearchAgent(BaseAgent):
             clean_query = query.split(":")[-1].strip()
             logger.info(f"Searching Wikipedia for: {clean_query}")
             
-            # Use the Wikipedia wrapper with improved parameters
+            # Wikipedia wrapper with improved parameters
             self.wikipedia_tool = WikipediaAPIWrapper(
                 top_k_results=1,  # Only need 1 good result
                 doc_content_chars_max=1500
@@ -416,7 +414,7 @@ class ResearchAgent(BaseAgent):
                 result.relevance_score = max(0.0, min(1.0, relevance))
             except Exception as e:
                 logger.warning(f"Failed to score relevance for result: {str(e)}")
-                # Keep default score
+                # No change to default score
         
         # Sort by combined score
         return sorted(
@@ -861,12 +859,15 @@ class ContentGenerationAgent(BaseAgent):
         )
         
         content = response.content.strip()
+        slide_lines = [l for l in content.split("\n") if l.startswith("SLIDE")]
+        summary = f"Presentation covering {request.topic} with {len(slide_lines)} slides"
+
         
         return ContentOutput(
             content_type="presentation",
             title=f"Presentation: {request.topic}",
             content=content,
-            summary=f"Presentation covering {request.topic} with {len([l for l in content.split('\n') if l.startswith('SLIDE')])} slides",
+            summary=summary,
             word_count=len(content.split()),
             readability_score=self._calculate_readability(content),
             sources_used=self._extract_sources(verified_info)
@@ -1249,7 +1250,7 @@ class ResearchPipeline:
     ) -> Optional[ContentOutput]:
         """Execute the complete research pipeline"""
         
-        # Initialize state
+        # State init
         initial_state: PipelineState = {
             "request": request,
             "research_results": [],
@@ -1332,8 +1333,9 @@ class ResearchPipeline:
     async def cleanup(self):
         """Cleanup pipeline resources"""
         logger.info("Cleaning up pipeline resources")
-        # Add any cleanup logic here
-    
+        self.agents.clear()
+        self.graph = None
+
     def get_agent_status(self) -> Dict[str, Any]:
         """Get current status of all agents"""
         return {

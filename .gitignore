@@ -1,4 +1,4 @@
-# Python-generated files
+# Files and directories
 __pycache__/
 *.py[oc]
 build/
@@ -11,6 +11,7 @@ __init__.py
 *.pdf
 *.log
 *.ipynb
+*.json
 
-# Virtual environments
+# Virtual environment
 myenv/

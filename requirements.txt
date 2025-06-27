@@ -13,3 +13,4 @@ typing_extensions==4.12.2
 uvicorn==0.34.3
 langchain>=0.3.0
 langgraph>=0.4.0
+wikipedia==1.4.0

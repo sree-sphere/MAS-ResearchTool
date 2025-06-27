@@ -23,7 +23,6 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 load_dotenv()
 
-# Importing the multi-agent system components
 from src.multi_agent_system import (
     ResearchPipeline,
     ResearchRequest,
@@ -32,18 +31,18 @@ from src.multi_agent_system import (
     ContentOutput
 )
 
-# Configure logging
+# Logger config
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('research_pipeline.log'),
+        logging.FileHandler('logs/research_pipeline.log'),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
 
-# FastAPI app initialization
+# API init
 app = FastAPI(
     title="Multi-Agent Research Pipeline",
     description="Automated research and content generation using AI agents",
@@ -68,6 +67,7 @@ research_pipeline = ResearchPipeline()
 pipeline_results: Dict[str, Dict] = {}
 active_pipelines: Dict[str, bool] = {}
 
+# Pydantic models for request/response
 class PipelineRequest(BaseModel):
     """Request model for pipeline execution"""
     topic: str = Field(..., description="Research topic", min_length=3, max_length=200)
@@ -91,7 +91,7 @@ class PipelineResponse(BaseModel):
 async def root():
     """Health check endpoint"""
     return {
-        "service": "Multi-Agent Research Pipeline",
+        "service": "Multi Agent Systen (MAS) => Research Pipeline",
         "version": "2.0.0",
         "status": "operational",
         "timestamp": datetime.now().isoformat(),
@@ -143,14 +143,13 @@ async def start_research_pipeline(
         
         logger.info(f"Started research pipeline {pipeline_id} for topic: {request.topic}")
         
-        # 5. Respond with estimated completion 15m from now
+        # 5. Respond with estimated completion
         return PipelineResponse(
             pipeline_id=pipeline_id,
             status="started",
             message=f"Research pipeline initiated for topic: {request.topic}",
             created_at=now,
-            # use timedelta rather than replace()
-            estimated_completion=now + timedelta(minutes=15)
+            estimated_completion=now + timedelta(minutes=3)             # using timedelta rather than replace() to avoid timezone issues
         )
         
     except Exception as e:
@@ -189,7 +188,13 @@ async def get_pipeline_results(pipeline_id: str):
     if result["status"] == "failed":
         raise HTTPException(status_code=500, detail=result["error"])
     
-    # Build your response dict
+    if not result["results"]:
+        raise HTTPException(status_code=404, detail="No results found for this pipeline")
+    
+    if not isinstance(result["results"], ContentOutput):
+        raise HTTPException(status_code=500, detail="Invalid results format")
+    
+    # Response Payload
     payload = {
         "pipeline_id": pipeline_id,
         "status": result["status"],
@@ -241,12 +246,13 @@ async def get_agent_metrics():
     """Get agent performance metrics"""
     return research_pipeline.get_agent_metrics()
 
+# Execution task
 async def execute_pipeline(pipeline_id: str, request: ResearchRequest):
     """Execute research pipeline in background"""
     try:
         logger.info(f"Executing pipeline {pipeline_id}")
         
-        # Update status
+        # Set pipeline status
         pipeline_results[pipeline_id]["status"] = "running"
         pipeline_results[pipeline_id]["progress"] = 5
         
@@ -259,10 +265,10 @@ async def execute_pipeline(pipeline_id: str, request: ResearchRequest):
                 pipeline_results[pipeline_id]["current_agent"] = agent_name
                 logger.info(f"Pipeline {pipeline_id}: {agent_name} - {message} ({progress}%)")
             else:
-                # Pipeline was cancelled
+                # Pipeline cancelled
                 raise Exception("Pipeline cancelled by user")
         
-        # Run the pipeline
+        # Run research pipeline
         results = await research_pipeline.execute_pipeline(request, progress_callback)
         
         end_time = datetime.now()
@@ -278,6 +284,13 @@ async def execute_pipeline(pipeline_id: str, request: ResearchRequest):
             "agent_metrics": research_pipeline.get_agent_metrics()
         })
         
+        # Save final results
+        if not os.path.exists("outputs"):
+            os.makedirs("outputs")
+        output_path = Path("outputs") / f"{pipeline_id}_results.json"
+        with open(output_path, "w") as f:
+            json.dump(pipeline_results[pipeline_id], f, indent=2)
+        
         logger.info(f"Pipeline {pipeline_id} completed successfully")
         
     except Exception as e:
@@ -287,6 +300,13 @@ async def execute_pipeline(pipeline_id: str, request: ResearchRequest):
             "error": str(e),
             "completed_at": datetime.now()
         })
+        
+        # Save error state
+        if not os.path.exists("outputs"):
+            os.makedirs("outputs")
+        output_path = Path("outputs") / f"{pipeline_id}_error.json"
+        with open(output_path, "w") as f:
+            json.dump(pipeline_results[pipeline_id], f, indent=2)
     
     finally:
         # Cleanup
@@ -302,7 +322,7 @@ async def startup_event():
     os.makedirs("outputs", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
     
-    # Initialize pipeline
+    # Pipeline init
     await research_pipeline.initialize()
     
     logger.info("Application started successfully")
@@ -322,7 +342,6 @@ async def shutdown_event():
     logger.info("Application shutdown complete")
 
 def main():
-    """Main entry point"""
     print("Multi-Agent Research Pipeline")
     print("=" * 50)
     print("Features:")
@@ -346,14 +365,7 @@ def main():
     print('        -H "Content-Type: application/json" \\')
     print('        -d \'{"topic": "Artificial Intelligence in Healthcare", "depth": "standard"}\'')
     
-    # FastAPI server startup
-    uvicorn.run(
-        "src.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
 
 if __name__ == "__main__":
     main()
