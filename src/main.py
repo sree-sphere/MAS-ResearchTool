@@ -17,22 +17,23 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel, Field
+from src.log import logger
+from src.models.models import PipelineRequest, PipelineResponse
 from dotenv import load_dotenv
 load_dotenv()
 
 from src.multi_agent_system import (ResearchPipeline, ResearchRequest, PipelineStatus, AgentMetrics, ContentOutput)
 
-# Logger config
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('logs/research_pipeline.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+# # Logger config
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+#     handlers=[
+#         logging.FileHandler('logs/research_pipeline.log'),
+#         logging.StreamHandler()
+#     ]
+# )
+# logger = logging.getLogger(__name__)
 
 # API init
 app = FastAPI(
@@ -60,23 +61,23 @@ pipeline_results: Dict[str, Dict] = {}
 active_pipelines: Dict[str, bool] = {}
 
 # Pydantic models for request/response
-class PipelineRequest(BaseModel):
-    """Request model for pipeline execution"""
-    topic: str = Field(..., description="Research topic", min_length=3, max_length=200)
-    depth: str = Field(default="standard", description="Research depth: basic, standard, deep")
-    content_types: List[str] = Field(default=["summary", "report"], description="Content types to generate"
-    #, min_items=1, max_items=4, example=["summary", "report", "presentation", "blog_post"]
-    )
-    target_audience: str = Field(default="general", description="Target audience level")
-    max_sources: int = Field(default=10, ge=3, le=50, description="Maximum sources to research")
+# class PipelineRequest(BaseModel):
+#     """Request model for pipeline execution"""
+#     topic: str = Field(..., description="Research topic", min_length=3, max_length=200)
+#     depth: str = Field(default="standard", description="Research depth: basic, standard, deep")
+#     content_types: List[str] = Field(default=["summary", "report"], description="Content types to generate"
+#     #, min_items=1, max_items=4, example=["summary", "report", "presentation", "blog_post"]
+#     )
+#     target_audience: str = Field(default="general", description="Target audience level")
+#     max_sources: int = Field(default=10, ge=3, le=50, description="Maximum sources to research")
 
-class PipelineResponse(BaseModel):
-    """Response model for pipeline status"""
-    pipeline_id: str
-    status: str
-    message: str
-    created_at: datetime
-    estimated_completion: Optional[datetime] = None
+# class PipelineResponse(BaseModel):
+#     """Response model for pipeline status"""
+#     pipeline_id: str
+#     status: str
+#     message: str
+#     created_at: datetime
+#     estimated_completion: Optional[datetime] = None
 
 @app.get("/")
 async def root():
