@@ -120,7 +120,7 @@ class BaseAgent:
         """Initialize the LLM based on provider"""
         if self.llm_provider == "openai":
             return ChatOpenAI(
-                model="gpt-4",
+                model="gpt-4o-mini",
                 temperature=0.3,
                 max_tokens=2000
             )
