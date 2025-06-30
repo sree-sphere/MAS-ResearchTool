@@ -1,10 +1,10 @@
-# Multi-Agent System with Tool Calling
+# Multi-Agent System
 
 Built a multi-agent system using **LangChain**, **LangGraph**, and **Pydantic** with **ChatGPT/Anthropic** as the underlying language model. Inclusive of automated research, fact-checking, and content creation workflows via modular AI agents.
 
 ## Features
 
-- **Multi-Agent Coordination by Tool Calling**: Research and Writing agents working together
+- **Multi-Agent Coordination**: Research and Writing agents working together
    1. **Research Agent**: Discovers and summarizes high-quality sources on your topic.
    2. **Fact Checking Agent**: Verifies claims against trusted references to ensure accuracy.
    3. **Content Generation Agent**: Produces human-readable summaries, reports, presentations, or blog posts.

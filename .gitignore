@@ -12,6 +12,6 @@ __init__.py
 *.log
 *.ipynb
 *.json
-
+.pdm-build/
 # Virtual environment
 myenv/
