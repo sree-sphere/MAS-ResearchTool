@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 import uvicorn
+import aiofiles
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -175,19 +176,21 @@ async def get_pipeline_results(pipeline_id: str):
         raise HTTPException(status_code=404, detail="No results found for this pipeline")
     
     if not isinstance(result["results"], ContentOutput):
-        raise HTTPException(status_code=500, detail="Invalid results format")
-    
-    # Response Payload
-    payload = {
-        "pipeline_id": pipeline_id,
-        "status": result["status"],
-        "results": result["results"],
-        "completed_at": result.get("completed_at"),
-        "execution_time": result.get("execution_time"),
-        "agent_metrics": result.get("agent_metrics"),
-    }
-    # Convert any datetime/UUID/etc → JSON primitives
-    safe_payload = jsonable_encoder(payload)
+        # raise HTTPException(status_code=500, detail="Invalid results format")
+        safe_payload = json.dumps(result["results"], default=str)
+    else:
+        # Response Payload
+        payload = {
+            "pipeline_id": pipeline_id,
+            "status": result["status"],
+            "results": result["results"],
+            "completed_at": result.get("completed_at"),
+            "execution_time": str(result.get("execution_time")),
+            "agent_metrics": result.get("agent_metrics"),
+        }
+        # Convert any datetime/UUID/etc → JSON primitives
+        safe_payload = json.dumps(payload, default=str)
+        
     return JSONResponse(content=safe_payload)
 
 @app.get("/research/active")
@@ -262,17 +265,17 @@ async def execute_pipeline(pipeline_id: str, request: ResearchRequest):
             "progress": 100,
             "current_agent": "completed",
             "results": results.dict() if results else None,
-            "completed_at": end_time,
-            "execution_time": (end_time - start_time).total_seconds(),
+            # "completed_at": str(end_time),
+            # "execution_time": str((end_time - start_time).total_seconds()),
             "agent_metrics": research_pipeline.get_agent_metrics()
         })
-        
         # Save final results
         if not os.path.exists("outputs"):
             os.makedirs("outputs")
         output_path = Path("outputs") / f"{pipeline_id}_results.json"
-        with open(output_path, "w") as f:
-            json.dump(pipeline_results[pipeline_id], f, indent=2)
+        async with aiofiles.open(output_path, "w") as f:
+            await f.write(json.dumps(pipeline_results[pipeline_id], indent=4, default=str))
+            # f.write(json.dumps(pipeline_results[pipeline_id], indent=4, default=str))
         
         logger.info(f"Pipeline {pipeline_id} completed successfully")
         
@@ -283,12 +286,12 @@ async def execute_pipeline(pipeline_id: str, request: ResearchRequest):
             "error": str(e),
             "completed_at": datetime.now()
         })
-        
         # Save error state
         if not os.path.exists("outputs"):
             os.makedirs("outputs")
         output_path = Path("outputs") / f"{pipeline_id}_error.json"
-        with open(output_path, "w") as f:
+        async with aiofiles.open(output_path, "w") as f:
+            await f.write(json.dumps(pipeline_results[pipeline_id], indent=2))
             json.dump(pipeline_results[pipeline_id], f, indent=2)
     
     finally:
