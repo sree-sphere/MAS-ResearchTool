@@ -1,3 +1,4 @@
+# models.py
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from datetime import datetime
@@ -7,9 +8,7 @@ class PipelineRequest(BaseModel):
     """Request model for pipeline execution"""
     topic: str = Field(..., description="Research topic", min_length=3, max_length=200)
     depth: str = Field(default="standard", description="Research depth: basic, standard, deep")
-    content_types: List[str] = Field(default=["summary", "report"], description="Content types to generate"
-    #, min_items=1, max_items=4, example=["summary", "report", "presentation", "blog_post"]
-    )
+    content_types: List[str] = Field(default=["summary", "report"], description="Content types to generate")
     target_audience: str = Field(default="general", description="Target audience level")
     max_sources: int = Field(default=10, ge=3, le=50, description="Maximum sources to research")
 

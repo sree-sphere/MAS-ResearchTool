@@ -1,4 +1,3 @@
-# log.py
 import logging
 from logging.handlers import RotatingFileHandler
 import os
@@ -36,7 +35,7 @@ def setup_logging(log_filename):
     return logger
 
 
-log_dir = "log"
+log_dir = "logs"
 log_file_path = os.path.join(log_dir, "app.log")
  
 # Create the directory if it doesn't exist
@@ -48,5 +47,3 @@ else:
 
 # Set up the logger
 logger = setup_logging(log_filename=log_file_path)
-
-# This is a test line
