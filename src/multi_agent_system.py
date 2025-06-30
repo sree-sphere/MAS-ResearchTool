@@ -15,19 +15,16 @@ import json
 import logging
 import time
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Callable, Union
+from typing import Dict, List, Any, Optional, Callable
 from enum import Enum
-import aiohttp
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
+from langchain_core.messages import HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
-# from langchain_community.tools import DuckDuckGoSearchResults
 from duckduckgo_search import DDGS
 from langchain_community.utilities import WikipediaAPIWrapper
 from langgraph.graph import StateGraph, END
-# from langgraph.prebuilt import ToolExecutor
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing_extensions import TypedDict
 
 logger = logging.getLogger(__name__)
@@ -58,7 +55,7 @@ class ResearchRequest(BaseModel):
     language: str = Field(default="en")
     include_citations: bool = Field(default=True)
     
-    @validator('depth')
+    @field_validator('depth')
     def validate_depth(cls, v):
         allowed = ["basic", "standard", "deep", "comprehensive"]
         if v not in allowed:
@@ -319,13 +316,6 @@ class ResearchAgent(BaseAgent):
         num_queries = {"basic": 3, "standard": 5, "deep": 7, "comprehensive": 10}.get(depth, 5)
 
         response = await self.llm.ainvoke(prompt.format_messages(topic=topic, depth=depth, num_queries=num_queries))
-        # if not response or not response.content.strip():
-        #     logger.warning("No queries generated, using default fallback")
-        #     return [
-        #         f"{topic} overview",
-        #         f"{topic} applications",
-        #         f"{topic} recent developments"
-        #     ][:num_queries]
         queries = [q.strip().replace('"', '') for q in response.content.split('\n') if q.strip()]
         return queries[:num_queries]
     
