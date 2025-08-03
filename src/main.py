@@ -9,8 +9,10 @@ import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List
 from uuid import uuid4
+from typing import Dict, List, Optional
+import uvicorn
+import aiofiles
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -227,7 +229,6 @@ async def get_pipeline_results(pipeline_id: str):
 
     return JSONResponse(content=jsonable_encoder(payload))
 
-
 @app.get("/research/active")
 async def get_active_pipelines():
     """List active pipelines"""
@@ -304,5 +305,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    import uvicorn
     uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")

@@ -1,4 +1,4 @@
-# Multi-Agent System with Tool Calling
+# Multi-Agent System
 
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)
@@ -23,7 +23,7 @@ Uses **LangChain**, **LangGraph**, and **Pydantic** with **ChatGPT/Anthropic** a
 - **Intelligent Query Routing**: Supervisor agent orchestrates optimal processing paths
 - **Caching**: Redis-based similarity matching with 48-hour TTL
 - **RAG System**: ChromaDB vector storage with semantic search
-- **Multi-Agent Coordination by Tool Calling**: Research and Writing agents working together
+- **Multi-Agent Coordination**: Research and Writing agents working together
    1. **Research Agent**: Discovers and summarizes high-quality sources on your topic.
    2. **Fact Checking Agent**: Verifies claims against trusted references to ensure accuracy.
    3. **Content Generation Agent**: Produces human-readable summaries, reports, presentations, or blog posts.

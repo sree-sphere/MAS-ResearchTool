@@ -16,6 +16,9 @@ pdm.lock
 .venv
 chroma_db/
 logs/
+.pdm-build/
 
 # Virtual environment
 myenv/
+logs
+outputs
