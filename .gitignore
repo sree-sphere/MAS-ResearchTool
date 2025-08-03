@@ -14,5 +14,8 @@ __init__.py
 *.json
 pdm.lock
 .venv
+chroma_db/
+logs/
+
 # Virtual environment
 myenv/
