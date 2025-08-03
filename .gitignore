@@ -12,7 +12,12 @@ __init__.py
 *.log
 *.ipynb
 *.json
+pdm.lock
+.venv
+chroma_db/
+logs/
 .pdm-build/
+
 # Virtual environment
 myenv/
 logs

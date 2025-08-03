@@ -11,23 +11,27 @@ This system demonstrates:
 """
 
 import asyncio
-import json
+import os
 import logging
 import time
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Callable
 from enum import Enum
-from langchain_core.messages import HumanMessage
+from pydantic import BaseModel
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from duckduckgo_search import DDGS
 from langchain_community.utilities import WikipediaAPIWrapper
-from langgraph.graph import StateGraph, END
-from pydantic import BaseModel, Field, field_validator
+from src.models.models import ResearchRequest, AgentMetrics, ResearchResult, ContentOutput
 from typing_extensions import TypedDict
+from langchain_core.tools import tool
+
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 class AgentRole(str, Enum):
     """Agent roles in the system"""
@@ -44,54 +48,6 @@ class PipelineStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
-class ResearchRequest(BaseModel):
-    """Research request configuration"""
-    topic: str = Field(..., description="Main research topic")
-    depth: str = Field(default="standard", description="Research depth level")
-    content_types: List[str] = Field(default=["summary", "report"])
-    target_audience: str = Field(default="general")
-    max_sources: int = Field(default=10, ge=1, le=50)
-    language: str = Field(default="en")
-    include_citations: bool = Field(default=True)
-    
-    @field_validator('depth')
-    def validate_depth(cls, v):
-        allowed = ["basic", "standard", "deep", "comprehensive"]
-        if v not in allowed:
-            raise ValueError(f"Depth must be one of {allowed}")
-        return v
-
-class AgentMetrics(BaseModel):
-    """Agent performance metrics"""
-    agent_id: str
-    role: AgentRole
-    total_executions: int = 0
-    successful_executions: int = 0
-    failed_executions: int = 0
-    avg_execution_time: float = 0.0
-    last_execution: Optional[datetime] = None
-    current_status: str = "idle"
-
-class ResearchResult(BaseModel):
-    """Single research result"""
-    title: str
-    content: str
-    source: str
-    credibility_score: float = Field(ge=0.0, le=1.0)
-    relevance_score: float = Field(ge=0.0, le=1.0)
-    timestamp: datetime = Field(default_factory=datetime.now)
-
-class ContentOutput(BaseModel):
-    """Generated content output"""
-    content_type: str
-    title: str
-    content: str
-    summary: str
-    word_count: int
-    readability_score: float
-    sources_used: List[str]
-    generated_at: datetime = Field(default_factory=datetime.now)
 
 class PipelineState(TypedDict):
     """State shared between agents in the pipeline"""
@@ -120,23 +76,21 @@ class BaseAgent:
         """Initialize the LLM based on provider"""
         if self.llm_provider == "openai":
             return ChatOpenAI(
-                model="gpt-4o-mini",
+                model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
                 temperature=0.3,
-                max_tokens=2000
+                max_tokens=2000,
+                api_key=os.getenv("OPENAI_API_KEY"),
+                base_url=os.getenv("OPENAI_BASE_URL", "")
             )
         elif self.llm_provider == "anthropic":
             return ChatAnthropic(
-                model="claude-3-sonnet-20240229",
+                model=os.getenv("ANTHROPIC_MODEL", "claude-2"),
                 temperature=0.3,
                 max_tokens=2000
             )
         else:
             # Fallback
-            return ChatOpenAI(model="gpt-4-0613", temperature=0.3)
-    
-    async def execute(self, state: PipelineState) -> PipelineState:
-        """Execute agent logic - to be implemented by subclasses"""
-        raise NotImplementedError
+            return ChatOpenAI(model="gpt-3.5-turbo", temperature=0.3)
     
     def _update_metrics(self, success: bool, execution_time: float):
         """Update agent performance metrics"""
@@ -150,10 +104,7 @@ class BaseAgent:
         if self.metrics.total_executions == 1:
             self.metrics.avg_execution_time = execution_time
         else:
-            self.metrics.avg_execution_time = (
-                (self.metrics.avg_execution_time * (self.metrics.total_executions - 1) + execution_time) 
-                / self.metrics.total_executions
-            )
+            self.metrics.avg_execution_time = (self.metrics.avg_execution_time * (self.metrics.total_executions - 1) + execution_time) / self.metrics.total_executions
         
         self.metrics.last_execution = datetime.now()
 
@@ -169,21 +120,34 @@ class ResearchAgent(BaseAgent):
         self.search_backends = ["text", "news"]  # Multiple DuckDuckGo backends upon testing
         self.backoff_times = [1, 2, 4]  # Exponential backoff times for search retries
         
-    async def execute(self, state: PipelineState) -> PipelineState:
+    
+    async def execute(self, input: dict) -> dict:
         """Execute research tasks"""
+        state: PipelineState = input
         start_time = time.time()
         self.metrics.current_status = "researching"
         
         try:
             request = state["request"]
-            logger.info(f"Research Agent starting research on: {request.topic}")
-            
+            if not request:
+                raise ValueError("No request found in state")
+            # Handle both dict and object formats
+            if isinstance(request, dict):
+                topic = request.get("topic", "Unknown Topic")
+                depth = request.get("depth", "standard")
+                max_sources = request.get("max_sources", 5)
+            else:
+                topic = getattr(request, 'topic', "Unknown Topic")
+                depth = getattr(request, 'depth', "standard") 
+                max_sources = getattr(request, 'max_sources', 5)
+            logger.info(f"Research Agent starting research on: {topic}")
+
             # Generate research queries
-            queries = await self._generate_research_queries(request.topic, request.depth)
+            queries = await self._generate_research_queries(topic, depth)
             
             # Perform searches with retry logic
             research_results = []
-            for i, query in enumerate(queries[:request.max_sources]):
+            for i, query in enumerate(queries[:max_sources]):
                 try:
                     # Web search with multiple backends
                     search_results = await self._web_search_with_retry(query)
@@ -196,7 +160,7 @@ class ResearchAgent(BaseAgent):
                     elif i < 3:
                         # Fallback to Wikipedia for user's topic if query is not entity-based
                         logger.info(f"Query '{query}' not entity-based, performing Wikipedia search")
-                        wiki_results = await self._wikipedia_search(request.topic)
+                        wiki_results = await self._wikipedia_search(topic)
                         research_results.extend(wiki_results)
                         
                 except Exception as e:
@@ -204,13 +168,14 @@ class ResearchAgent(BaseAgent):
                     state["errors"].append(f"Search error: {str(e)}")
             
             # Rank and filter results
-            ranked_results = await self._rank_results(research_results, request.topic)
+            ranked_results = await self._rank_results(research_results, request.topic if hasattr(request, 'topic') else request.get('topic', topic))
             
-            state["research_results"] = ranked_results[:request.max_sources]
+            state["research_results"] = ranked_results[:max_sources]
             state["current_step"] = "research_completed"
             state["progress"] = 25
             
             self._update_metrics(True, time.time() - start_time)
+            logger.info(f"Research completed with {len(ranked_results)} results")
             self.metrics.current_status = "idle"
             
             logger.info(f"Research completed: {len(ranked_results)} results found")
@@ -418,13 +383,22 @@ class FactCheckingAgent(BaseAgent):
     def __init__(self, llm_provider: str = "openai"):
         super().__init__(AgentRole.FACT_CHECKER, llm_provider)
     
-    async def execute(self, state: PipelineState) -> PipelineState:
+    
+    async def execute(self, input: dict) -> dict:
         """Execute fact-checking tasks"""
+        state: PipelineState = input
         start_time = time.time()
         self.metrics.current_status = "fact_checking"
         
         try:
             research_results = state["research_results"]
+            if not research_results:
+                raise ValueError("No research results found in state")
+            # Handle both dict and object formats
+            if isinstance(research_results, dict):
+                research_results = [ResearchResult(**r) for r in research_results.get("results", [])]
+            elif isinstance(research_results, list) and all(isinstance(r, dict) for r in research_results):
+                research_results = [ResearchResult(**r) for r in research_results]
             logger.info(f"Fact-checking {len(research_results)} research results")
             
             fact_check_results = {
@@ -441,6 +415,7 @@ class FactCheckingAgent(BaseAgent):
                 state["current_step"] = "fact_checking_completed"
                 state["progress"] = 50
                 self._update_metrics(True, time.time() - start_time)
+                logger.info("Fact-checking completed with no results")
                 self.metrics.current_status = "idle"
                 return state
             
@@ -472,6 +447,7 @@ class FactCheckingAgent(BaseAgent):
             state["progress"] = 50
             
             self._update_metrics(True, time.time() - start_time)
+            logger.info(f"Fact-checking completed with {len(fact_check_results['verified_facts'])} verified facts")
             self.metrics.current_status = "idle"
             
             logger.info("Fact-checking completed")
@@ -621,8 +597,10 @@ class ContentGenerationAgent(BaseAgent):
     def __init__(self, llm_provider: str = "openai"):
         super().__init__(AgentRole.CONTENT_GENERATOR, llm_provider)
     
-    async def execute(self, state: PipelineState) -> PipelineState:
+    
+    async def execute(self, input: dict) -> dict:
         """Execute content generation tasks"""
+        state: PipelineState = input
         start_time = time.time()
         self.metrics.current_status = "generating_content"
         
@@ -630,15 +608,32 @@ class ContentGenerationAgent(BaseAgent):
             request = state["request"]
             research_results = state["research_results"]
             fact_check_results = state["fact_check_results"]
+            if not request or not research_results or not fact_check_results:
+                raise ValueError("Missing request, research results, or fact-check results in state")
+            # Handle both dict and object formats
+            if isinstance(research_results, dict):
+                research_results = [ResearchResult(**r) for r in research_results.get("results", [])]
+            if not isinstance(fact_check_results, dict):
+                fact_check_results = {
+                    "verified_facts": [],
+                    "questionable_claims": [],
+                    "contradictions": [],
+                    "confidence_scores": {},
+                    "source_reliability": {}
+                }
             
-            logger.info(f"Generating content types: {request.content_types}")
+            # Extract content types from request
+            if isinstance(request, dict):
+                content_types = request.get("content_types", ["summary"])
+                logger.info(f"Generating content types: {content_types}")
+            else:
+                content_types = getattr(request, 'content_types', ["summary"])
+                logger.info(f"Generating content types: {content_types}")
             
             generated_content = []
             
-            for content_type in request.content_types:
-                content = await self._generate_content(
-                    content_type, request, research_results, fact_check_results
-                )
+            for content_type in content_types:
+                content = await self._generate_content(content_type, request, research_results, fact_check_results)
                 if content:
                     generated_content.append(content)
             
@@ -647,6 +642,7 @@ class ContentGenerationAgent(BaseAgent):
             state["progress"] = 75
             
             self._update_metrics(True, time.time() - start_time)
+            logger.info(f"Content generation completed with {len(generated_content)} pieces")
             self.metrics.current_status = "idle"
             
             logger.info(f"Generated {len(generated_content)} content pieces")
@@ -660,8 +656,7 @@ class ContentGenerationAgent(BaseAgent):
         return state
     
     async def _generate_content(
-        self, 
-        content_type: str, 
+        self, content_type: str, 
         request: ResearchRequest, 
         research_results: List[ResearchResult],
         fact_check_results: Dict[str, Any]
@@ -722,6 +717,14 @@ class ContentGenerationAgent(BaseAgent):
     
     async def _generate_summary(self, request: ResearchRequest, verified_info: str) -> ContentOutput:
         """Generate a comprehensive summary"""
+        # Extract topic and audience
+        if isinstance(request, dict):
+            topic = request.get("topic", "Unknown Topic")
+            audience = request.get("target_audience", "general")
+        else:
+            topic = getattr(request, 'topic', "Unknown Topic")
+            audience = getattr(request, 'target_audience', "general")
+            
         prompt = ChatPromptTemplate.from_template(
             """Create a comprehensive summary about "{topic}" for a {audience} audience.
             
@@ -741,9 +744,9 @@ class ContentGenerationAgent(BaseAgent):
         
         response = await self.llm.ainvoke(
             prompt.format_messages(
-                topic=request.topic,
-                audience=request.target_audience,
-                verified_info=verified_info[:4000] if verified_info else f"Topic: {request.topic}"
+                topic=topic,
+                audience=audience,
+                verified_info=verified_info[:4000] if verified_info else f"Topic: {topic}"
             )
         )
         
@@ -751,7 +754,7 @@ class ContentGenerationAgent(BaseAgent):
         
         return ContentOutput(
             content_type="summary",
-            title=f"Summary: {request.topic}",
+            title=f"Summary: {topic}",
             content=content,
             summary=content[:200] + "..." if len(content) > 200 else content,
             word_count=len(content.split()),
@@ -922,12 +925,7 @@ class ContentGenerationAgent(BaseAgent):
             Academic Paper Outline:"""
         )
         
-        response = await self.llm.ainvoke(
-            prompt.format_messages(
-                topic=request.topic,
-                verified_info=verified_info[:4000]
-            )
-        )
+        response = await self.llm.ainvoke(prompt.format_messages(topic=request.topic, verified_info=verified_info[:4000]))
         
         content = response.content.strip()
         
@@ -1012,14 +1010,23 @@ class QualityAssuranceAgent(BaseAgent):
     def __init__(self, llm_provider: str = "openai"):
         super().__init__(AgentRole.QUALITY_ASSURANCE, llm_provider)
     
-    async def execute(self, state: PipelineState) -> PipelineState:
+    
+    async def execute(self, input: dict) -> dict:
         """Execute quality assurance tasks"""
+        state: PipelineState = input
         start_time = time.time()
         self.metrics.current_status = "quality_checking"
         
         try:
             generated_content = state["generated_content"]
             fact_check_results = state["fact_check_results"]
+            if not generated_content or not fact_check_results:
+                raise ValueError("Missing generated content or fact-check results in state")
+            # Handle both dict and object formats
+            if isinstance(generated_content, dict):
+                generated_content = [ContentOutput(**c) for c in generated_content.get("content", [])]
+            elif isinstance(generated_content, list) and all(isinstance(c, dict) for c in generated_content):
+                generated_content = [ContentOutput(**c) for c in generated_content]
             
             logger.info(f"Quality checking {len(generated_content)} content pieces")
             
@@ -1057,6 +1064,9 @@ class QualityAssuranceAgent(BaseAgent):
             state["progress"] = 95
             
             self._update_metrics(True, time.time() - start_time)
+            logger.info(f"Quality assurance completed with overall score: {qa_results['overall_quality_score']:.2f}")
+            state["qa_results"] = qa_results
+            state["errors"] = []
             self.metrics.current_status = "idle"
             
             logger.info(f"Quality assurance completed. Overall score: {qa_results['overall_quality_score']:.2f}")
@@ -1069,11 +1079,7 @@ class QualityAssuranceAgent(BaseAgent):
         
         return state
     
-    async def _assess_content_quality(
-        self, 
-        content: ContentOutput, 
-        fact_check_results: Dict[str, Any]
-    ) -> float:
+    async def _assess_content_quality(self, content: ContentOutput, fact_check_results: Dict[str, Any]) -> float:
         """Assess overall content quality"""
         prompt = ChatPromptTemplate.from_template(
             """Assess the quality of this {content_type} on a scale of 0.0 to 1.0.
@@ -1167,72 +1173,36 @@ class ResearchPipeline:
     
     def __init__(self, llm_provider: str = "openai"):
         self.llm_provider = llm_provider
-        self.agents = {
-            AgentRole.RESEARCHER: ResearchAgent(llm_provider),
-            AgentRole.FACT_CHECKER: FactCheckingAgent(llm_provider),
-            AgentRole.CONTENT_GENERATOR: ContentGenerationAgent(llm_provider),
-            AgentRole.QUALITY_ASSURANCE: QualityAssuranceAgent(llm_provider)
-        }
-        self.graph = None
-        self._build_graph()
-    
-    def _build_graph(self):
-        """Build the LangGraph workflow"""
-        workflow = StateGraph(PipelineState)
-        
-        # Add agent nodes
-        workflow.add_node("research", self._research_node)
-        workflow.add_node("fact_check", self._fact_check_node)
-        workflow.add_node("content_generation", self._content_generation_node)
-        workflow.add_node("quality_assurance", self._quality_assurance_node)
-        
-        # Define the workflow
-        workflow.set_entry_point("research")
-        workflow.add_edge("research", "fact_check")
-        workflow.add_edge("fact_check", "content_generation")
-        workflow.add_edge("content_generation", "quality_assurance")
-        workflow.add_edge("quality_assurance", END)
-        
-        self.graph = workflow.compile()
-    
-    async def _research_node(self, state: PipelineState) -> PipelineState:
-        """Research node execution"""
-        return await self.agents[AgentRole.RESEARCHER].execute(state)
-    
-    async def _fact_check_node(self, state: PipelineState) -> PipelineState:
-        """Fact-checking node execution"""
-        return await self.agents[AgentRole.FACT_CHECKER].execute(state)
-    
-    async def _content_generation_node(self, state: PipelineState) -> PipelineState:
-        """Content generation node execution"""
-        return await self.agents[AgentRole.CONTENT_GENERATOR].execute(state)
-    
-    async def _quality_assurance_node(self, state: PipelineState) -> PipelineState:
-        """Quality assurance node execution"""
-        return await self.agents[AgentRole.QUALITY_ASSURANCE].execute(state)
+        self.research_agent = ResearchAgent(llm_provider)
+        self.factcheck_agent = FactCheckingAgent(llm_provider)
+        self.content_agent = ContentGenerationAgent(llm_provider)
+        self.qa_agent = QualityAssuranceAgent(llm_provider)
+        logger.info("Pipeline initialized with structured agent execution")
     
     async def initialize(self):
-        """Initialize the pipeline"""
-        logger.info("Initializing Multi-Agent Research Pipeline")
-        
-        # Test API connections
-        for role, agent in self.agents.items():
+        """Initialize the pipeline and test agent connectivity"""
+        logger.info("Initializing ResearchPipeline")
+        for role, agent in [
+            (AgentRole.RESEARCHER, self.research_agent),
+            (AgentRole.FACT_CHECKER, self.factcheck_agent),
+            (AgentRole.CONTENT_GENERATOR, self.content_agent),
+            (AgentRole.QUALITY_ASSURANCE, self.qa_agent),
+        ]:
             try:
-                # Simple test call
-                test_response = await agent.llm.ainvoke([HumanMessage(content="Hello")])
-                logger.info(f"✓ {role.value} agent initialized successfully")
+                # Simple ping to the LLM
+                await agent.llm.ainvoke([HumanMessage(content="Hello")])
+                logger.info(f"✓ {role.value} agent initialized")
             except Exception as e:
-                logger.warning(f"⚠ {role.value} agent initialization issue: {str(e)}")
+                logger.warning(f"⚠ {role.value} initialization failed: {e}")
     
-    async def execute_pipeline(
-        self, 
-        request: ResearchRequest,
-        progress_callback: Optional[Callable[[str, int, str], None]] = None
-    ) -> Optional[ContentOutput]:
-        """Execute the complete research pipeline"""
+    async def execute_pipeline(self, pipeline_id: str, request: ResearchRequest, progress_callback: Optional[Callable[[str, int, str], None]] = None) -> Dict[str, Any]:
+        """
+        Execute the complete research pipeline with all agents in sequence
+        """
+        execution_start = datetime.now()
         
-        # State init
-        initial_state: PipelineState = {
+        # Initialize pipeline state
+        pipeline_state: PipelineState = {
             "request": request,
             "research_results": [],
             "fact_check_results": {},
@@ -1241,81 +1211,162 @@ class ResearchPipeline:
             "progress": 0,
             "errors": [],
             "agent_outputs": {},
-            "execution_start": datetime.now(),
-            "metadata": {
-                "pipeline_version": "2.0.0",
-                "llm_provider": self.llm_provider,
-                "execution_id": f"exec_{int(time.time())}"
-            }
+            "execution_start": execution_start,
+            "metadata": {"pipeline_id": pipeline_id}
         }
         
         try:
             logger.info(f"Starting pipeline execution for: {request.topic}")
             
-            # Execute the graph
-            final_state = None
-            async for state in self.graph.astream(initial_state):
-                final_state = state
-                
-                # Progress callback
-                if progress_callback:
-                    current_step = list(state.keys())[0] if state else "unknown"
-                    progress = state.get(list(state.keys())[0], {}).get("progress", 0) if state else 0
-                    await progress_callback(current_step, progress, f"Processing {current_step}")
+            # Update pipeline status in fastapi
+            if progress_callback:
+                progress_callback("initializing", 0, "Pipeline starting...")
             
-            if final_state and "quality_assurance" in final_state:
-                qa_state = final_state["quality_assurance"]
-                
-                # Create final output
-                if qa_state.get("generated_content"):
-                    # Return the highest quality content
-                    best_content = max(
-                        qa_state["generated_content"],
-                        key=lambda x: qa_state.get("agent_outputs", {}).get("quality_assurance", {}).get("content_scores", {}).get(x.content_type, 0.0)
-                    )
-                    
-                    # Add execution metadata
-                    execution_time = (datetime.now() - initial_state["execution_start"]).total_seconds()
-                    
-                    # Create comprehensive result
-                    final_result = ContentOutput(
-                        content_type="pipeline_result",
-                        title=f"Research Pipeline Result: {request.topic}",
-                        content=json.dumps({
-                            "request": request.dict(),
-                            "execution_metadata": {
-                                "execution_time": execution_time,
-                                "total_sources": len(qa_state.get("research_results", [])),
-                                "content_generated": len(qa_state.get("generated_content", [])),
-                                "quality_score": qa_state.get("agent_outputs", {}).get("quality_assurance", {}).get("overall_quality_score", 0.0),
-                                "errors": qa_state.get("errors", [])
-                            },
-                            "research_results": [r.dict() for r in qa_state.get("research_results", [])],
-                            "fact_check_results": qa_state.get("fact_check_results", {}),
-                            "generated_content": [c.dict() for c in qa_state.get("generated_content", [])],
-                            "quality_assurance": qa_state.get("agent_outputs", {}).get("quality_assurance", {})
-                        }, indent=2, default=str),
-                        summary=f"Pipeline completed successfully for '{request.topic}' in {execution_time:.1f}s",
-                        word_count=0,
-                        readability_score=1.0,
-                        sources_used=[]
-                    )
-                    
-                    logger.info(f"Pipeline execution completed successfully in {execution_time:.1f}s")
-                    return final_result
+            # Step 1: Research Agent
+            logger.info("Step 1: Executing Research Agent")
+            pipeline_state["current_step"] = "research"
+            pipeline_state["progress"] = 10
             
-            logger.error("Pipeline execution failed - no final state reached")
-            return None
+            if progress_callback:
+                progress_callback("research", 10, "Gathering research data...")
+            
+            pipeline_state = await self.research_agent.execute(pipeline_state)
+            
+            if pipeline_state["errors"]:
+                logger.warning(f"Research agent completed with errors: {pipeline_state['errors']}")
+            
+            logger.info(f"Research completed with {len(pipeline_state['research_results'])} results")
+            
+            # Step 2: Fact checking Agent
+            logger.info("Step 2: Executing Fact-Checking Agent")
+            pipeline_state["current_step"] = "fact_checking"
+            pipeline_state["progress"] = 40
+            
+            if progress_callback:
+                progress_callback("fact_checking", 40, "Verifying information accuracy...")
+            
+            pipeline_state = await self.factcheck_agent.execute(pipeline_state)
+            
+            if pipeline_state["errors"]:
+                logger.warning(f"Fact-checking completed with errors: {pipeline_state['errors']}")
+            
+            logger.info("Fact-checking completed")
+            
+            # Step 3: Content Generation Agent
+            logger.info("Step 3: Executing Content Generation Agent")
+            pipeline_state["current_step"] = "content_generation"
+            pipeline_state["progress"] = 70
+            
+            if progress_callback:
+                progress_callback("content_generation", 70, "Generating content...")
+            
+            pipeline_state = await self.content_agent.execute(pipeline_state)
+            
+            if pipeline_state["errors"]:
+                logger.warning(f"Content generation completed with errors: {pipeline_state['errors']}")
+            
+            logger.info(f"Content generation completed with {len(pipeline_state['generated_content'])} pieces")
+            
+            # Step 4: Quality Assurance Agent
+            logger.info("Step 4: Executing Quality Assurance Agent")
+            pipeline_state["current_step"] = "quality_assurance"
+            pipeline_state["progress"] = 90
+            
+            if progress_callback:
+                progress_callback("quality_assurance", 90, "Performing quality checks...")
+            
+            pipeline_state = await self.qa_agent.execute(pipeline_state)
+            
+            if pipeline_state["errors"]:
+                logger.warning(f"Quality assurance completed with errors: {pipeline_state['errors']}")
+            
+            # Final completion
+            pipeline_state["current_step"] = "completed"
+            pipeline_state["progress"] = 100
+            
+            if progress_callback:
+                progress_callback("completed", 100, "Pipeline completed successfully")
+            
+            # Prepare final results
+            execution_time = (datetime.now() - execution_start).total_seconds()
+            
+            final_results = {
+                "pipeline_id": pipeline_id,
+                "status": "completed",
+                "execution_time": execution_time,
+                "request": request.dict() if hasattr(request, 'dict') else request,
+                "research_summary": {
+                    "total_sources": len(pipeline_state["research_results"]),
+                    "sources": [
+                        {
+                            "title": result.title if hasattr(result, 'title') else result.get('title', 'Unknown'),
+                            "source": result.source if hasattr(result, 'source') else result.get('source', 'Unknown'),
+                            "relevance_score": result.relevance_score if hasattr(result, 'relevance_score') else result.get('relevance_score', 0.0)
+                        }
+                        for result in pipeline_state["research_results"]
+                    ]
+                },
+                "fact_check_summary": {
+                    "verified_facts": len(pipeline_state["fact_check_results"].get("verified_facts", [])),
+                    "questionable_claims": len(pipeline_state["fact_check_results"].get("questionable_claims", [])),
+                    "contradictions": len(pipeline_state["fact_check_results"].get("contradictions", [])),
+                    "overall_reliability": sum(pipeline_state["fact_check_results"].get("source_reliability", {}).values()) / 
+                                         max(len(pipeline_state["fact_check_results"].get("source_reliability", {})), 1)
+                },
+                "generated_content": [
+                    {
+                        "content_type": content.content_type if hasattr(content, 'content_type') else content.get('content_type', 'unknown'),
+                        "title": content.title if hasattr(content, 'title') else content.get('title', 'Untitled'),
+                        "word_count": content.word_count if hasattr(content, 'word_count') else content.get('word_count', 0),
+                        "readability_score": content.readability_score if hasattr(content, 'readability_score') else content.get('readability_score', 0.0),
+                        "content": content.content if hasattr(content, 'content') else content.get('content', ''),
+                        "summary": content.summary if hasattr(content, 'summary') else content.get('summary', ''),
+                        "sources_used": content.sources_used if hasattr(content, 'sources_used') else content.get('sources_used', [])
+                    }
+                    for content in pipeline_state["generated_content"]
+                ],
+                "quality_assessment": pipeline_state["agent_outputs"].get("quality_assurance", {}),
+                "errors": pipeline_state["errors"],
+                "agent_metrics": self.get_agent_metrics()
+            }
+            
+            logger.info(f"Pipeline completed successfully in {execution_time:.2f}s")
+            
+            return final_results
             
         except Exception as e:
             logger.error(f"Pipeline execution failed: {str(e)}")
-            raise
+            
+            # Update status to failed
+            if progress_callback:
+                progress_callback("failed", pipeline_state.get("progress", 0), f"Pipeline failed: {str(e)}")
+            
+            # Return error result
+            execution_time = (datetime.now() - execution_start).total_seconds()
+            
+            return {
+                "pipeline_id": pipeline_id,
+                "status": "failed",
+                "execution_time": execution_time,
+                "request": request.dict() if hasattr(request, 'dict') else request,
+                "error": str(e),
+                "errors": pipeline_state.get("errors", []),
+                "current_step": pipeline_state.get("current_step", "unknown"),
+                "progress": pipeline_state.get("progress", 0),
+                "partial_results": {
+                    "research_results": len(pipeline_state.get("research_results", [])),
+                    "fact_check_completed": bool(pipeline_state.get("fact_check_results")),
+                    "content_generated": len(pipeline_state.get("generated_content", []))
+                }
+            }
     
     async def cleanup(self):
         """Cleanup pipeline resources"""
         logger.info("Cleaning up pipeline resources")
-        self.agents.clear()
-        self.graph = None
+        for agent in [self.research_agent, self.factcheck_agent, self.content_agent, self.qa_agent]:
+            if hasattr(agent.metrics, 'reset'):
+                agent.metrics.reset()  # Reset metrics for next run
+            logger.info(f"✓ {agent.role.value} agent cleaned up")
 
     def get_agent_status(self) -> Dict[str, Any]:
         """Get current status of all agents"""
@@ -1323,16 +1374,35 @@ class ResearchPipeline:
             role.value: {
                 "status": agent.metrics.current_status,
                 "total_executions": agent.metrics.total_executions,
-                "success_rate": (agent.metrics.successful_executions / agent.metrics.total_executions if agent.metrics.total_executions > 0 else 0.0),
-                "avg_execution_time": agent.metrics.avg_execution_time,
-                "last_execution": agent.metrics.last_execution.isoformat() if agent.metrics.last_execution else None
+                "success_rate": agent.metrics.successful_executions / agent.metrics.total_executions if agent.metrics.total_executions > 0 else 0.0,
+                "avg_exec_time": agent.metrics.avg_execution_time,
+                "last_exec": agent.metrics.last_execution.isoformat() if agent.metrics.last_execution else None
             }
-            for role, agent in self.agents.items()
+            for role, agent in [
+                (AgentRole.RESEARCHER, self.research_agent),
+                (AgentRole.FACT_CHECKER, self.factcheck_agent),
+                (AgentRole.CONTENT_GENERATOR, self.content_agent),
+                (AgentRole.QUALITY_ASSURANCE, self.qa_agent),
+            ]
         }
-    
-    def get_agent_metrics(self) -> Dict[str, AgentMetrics]:
+
+    def get_agent_metrics(self) -> Dict[str, Any]:
         """Get detailed metrics for all agents"""
         return {
-            role.value: agent.metrics.dict()
-            for role, agent in self.agents.items()
+            role.value: agent.metrics.dict() if hasattr(agent.metrics, 'dict') else {
+                "agent_id": agent.metrics.agent_id,
+                "role": agent.metrics.role,
+                "total_executions": agent.metrics.total_executions,
+                "successful_executions": agent.metrics.successful_executions,
+                "failed_executions": agent.metrics.failed_executions,
+                "avg_execution_time": agent.metrics.avg_execution_time,
+                "current_status": agent.metrics.current_status,
+                "last_execution": agent.metrics.last_execution.isoformat() if agent.metrics.last_execution else None
+            }
+            for role, agent in [
+                (AgentRole.RESEARCHER, self.research_agent),
+                (AgentRole.FACT_CHECKER, self.factcheck_agent),
+                (AgentRole.CONTENT_GENERATOR, self.content_agent),
+                (AgentRole.QUALITY_ASSURANCE, self.qa_agent),
+            ]
         }

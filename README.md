@@ -1,9 +1,28 @@
 # Multi-Agent System
 
-Built a multi-agent system using **LangChain**, **LangGraph**, and **Pydantic** with **ChatGPT/Anthropic** as the underlying language model. Inclusive of automated research, fact-checking, and content creation workflows via modular AI agents.
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)
+![LangChain](https://img.shields.io/badge/LangChain-0.1+-orange.svg)
+![Redis](https://img.shields.io/badge/Redis-7.0+-red.svg)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-0.4+-purple.svg)
 
+A multi-agent system that intelligently routes research queries through a three-tier architecture:
+- Cache Layer (≥90% similarity): Instant retrieval from Redis
+- RAG Layer (80-89% similarity): Vector search with ChromaDB
+- Pipeline Layer (<80% similarity): Full research workflow
+
+Uses **LangChain**, **LangGraph**, and **Pydantic** with **ChatGPT/Anthropic** as the underlying language model. Includes automated research, fact-checking, and content creation workflows via modular AI agents.
+
+**Why this project?**
+- Real-time intelligent routing (Cache → RAG → Full Pipeline)
+- Modular agents with callbacks & state checkpointing
+
+---
 ## Features
 
+- **Intelligent Query Routing**: Supervisor agent orchestrates optimal processing paths
+- **Caching**: Redis-based similarity matching with 48-hour TTL
+- **RAG System**: ChromaDB vector storage with semantic search
 - **Multi-Agent Coordination**: Research and Writing agents working together
    1. **Research Agent**: Discovers and summarizes high-quality sources on your topic.
    2. **Fact Checking Agent**: Verifies claims against trusted references to ensure accuracy.
@@ -17,23 +36,27 @@ Built a multi-agent system using **LangChain**, **LangGraph**, and **Pydantic** 
 - **Streamlit Dashboard**: User-friendly UI to orchestrate pipelines without writing code.
 - **Comprehensive Logging**: Timestamped logs to both console and logs/research_pipeline.log.
 
-## Architecture
+---
+## Research Architecture
 
 ```
-┌───────────────────┐       ┌─────────────────────────┐
-│  Client (cURL,    │  HTTP │   FastAPI Application   │
-│  Streamlit UI)    ├──────▶│  ┌───────────────────┐  │
-└───────────────────┘       │  │ ResearchPipeline  │  │
-                            │  │  ┌─────────────┐  │  │
-                            │  │  │ Agents      │  │  │
-                            │  │  │  • Research │  │  │
-                            │  │  │  • FactCheck│  │  │
-                            │  │  │  • Generate │  │  │
-                            │  │  │  • QA       │  │  │
-                            │  │  └─────────────┘  │  │
-                            │  └───────────────────┘  │
-                            │    BackgroundTasks      │
-                            └─────────────────────────┘
+┌───────────────────┐        ┌─────────────────────────┐
+│  Client (cURL,    │  HTTP  │   FastAPI Application   │
+│  Streamlit UI)    ├───────▶│  ┌───────────────────┐  │
+└───────────────────┘        │  │ Supervisor (Route)│  │
+                             │  └─────────┬─────────┘  │
+                             │  ┌─────────▼─────────┐  │
+                             │  │ ResearchPipeline  │  │
+                             │  │  ┌─────────────┐  │  │
+                             │  │  │ Agents      │  │  │
+                             │  │  │  • Research │  │  │
+                             │  │  │  • FactCheck│  │  │
+                             │  │  │  • Generate │  │  │
+                             │  │  │  • QA       │  │  │
+                             │  │  └─────────────┘  │  │
+                             │  └───────────────────┘  │
+                             │    BackgroundTasks      │
+                             └─────────────────────────┘
 
 ```
 1. FastAPI exposes endpoints under ```/research/...```
@@ -42,6 +65,7 @@ Built a multi-agent system using **LangChain**, **LangGraph**, and **Pydantic** 
 4. In-Memory Store (```pipeline_results```, ```active_pipelines```) holds pipeline state until retrieval.
 5. Streamlit App (```st_app.py```) calls these endpoints to provide a dashboard.
 
+---
 ## Project Structure
 
 ```
@@ -55,13 +79,20 @@ MAS-ResearchTool/
 ├── uv.lock                   # uv project lock
 ├── src/
 │   ├── __init__.py
+│   ├── supervisor_agent.py   # Orchestration
+│   ├── cache_manager.py      # Redis operations
+│   ├── rag_agent.py          # ChromaDB & RAG functionality
 │   ├── main.py               # FastAPI entry point
 │   ├── multi_agent_system.py # Core pipeline & agents
-│   └── st_app.py                # Streamlit dashboard
+│   └── st_app.py             # Streamlit dashboard
+│   ├── models/
+│   │   └── models.py           # Pydantic models
+│   └── log.py                  # Logging configuration
 ├── tests/                    # Unit & integration tests
 └── README.md                 # This file
 ```
 
+---
 ## Setup
 
 1. **Clone the repo**
@@ -77,6 +108,7 @@ MAS-ResearchTool/
    ```
 
 3. **Install Dependencies**
+
    Using uv
    ```bash
    uv pip install -r requirements.txt
@@ -96,6 +128,19 @@ MAS-ResearchTool/
    export API_URL=http://localhost:8000
    ```
 
+5. **Start Redis Server**
+
+   MacOS:
+   ```bash
+   brew services start redis
+   ```
+   Docker:
+   ```bash
+   # or docker run -p 6379:6379 --name redis
+   docker compose up redis -d
+   ```
+
+---
 ## Usage
 
 1. **FastAPI server**
@@ -103,6 +148,7 @@ MAS-ResearchTool/
    uvicorn src.main:app --reload
    ```
    - Docs: http://localhost:8000/docs
+   - Redoc: http://localhost:8000/redoc
 
 2. **Streamlit**
    ```bash
@@ -110,6 +156,7 @@ MAS-ResearchTool/
    ```
    - Dashboard: http://localhost:8501
 
+---
 ## Key Technologies
 
 - **LangChain**: for building the application with LLM
@@ -130,6 +177,30 @@ MAS-ResearchTool/
    - Saves final content and agent metrics.
    - Marks status ```completed```, progress 100%.
 5. Client fetches ```/research/results/{pipeline_id}``` to retrieve JSON payload.
+
+### Intelligent Routing Logic
+**Route Decision Matrix**
+
+| Similarity Score | Route   | Processing Time | Use Case                              |
+|------------------|---------|-----------------|---------------------------------------|
+| ≥90%            | Cache   | ~0.1s           | Identical/near-identical queries      |
+| 80-89%          | RAG     | ~2-5s           | Related queries with existing knowledge|
+| <80%            | Pipeline| ~30-180s         | Novel queries requiring fresh research|
+
+**Example Routing Scenarios**
+```
+# High Similarity (Cache Route)
+Query 1: "What is machine learning?"
+Query 2: "What is ML and how does it work?" → Cache (95% similarity)
+
+# Medium Similarity (RAG Route)  
+Query 1: "Machine learning applications"
+Query 2: "AI applications in business" → RAG (85% similarity)
+
+# Low Similarity (Pipeline Route)
+Query 1: "Machine learning basics"
+Query 2: "Quantum computing principles" → Pipeline (15% similarity)
+```
 
 ## Sample Output
 
@@ -164,6 +235,35 @@ The system includes:
 - Tool error handling and recovery
 - State validation with Pydantic models
 
+## Multi-Agent System
+### Agent Roles
+
+1. 🔍 Research Agent
+- Web search via DuckDuckGo
+- Wikipedia integration
+- Source ranking and filtering
+
+2. ✅ Fact-Checking Agent
+- Cross-reference verification
+- Contradiction detection
+- Source reliability assessment
+
+3. 📝 Content Generation Agent
+- Multiple content formats (summary, report, blog, academic)
+- Audience-targeted writing
+- Professional quality output
+
+4. 🎯 Quality Assurance Agent
+- Content quality scoring
+- Issue identification
+- Improvement recommendations
+
+5. 👨‍💼 Supervisor Agent
+- Query routing orchestration
+- Workflow optimization
+- Performance monitoring
+
+---
 ## Customization
 
 ### Adding New Agents
@@ -176,6 +276,7 @@ The system includes:
 4. **Adjust** configuration schema in ```PipelineRequest``` if you need new parameters.
 5. **Rebuild** and restart the server.
 
+---
 ## Learning Resources
 
 - [LangChain Documentation](https://python.langchain.com/)
