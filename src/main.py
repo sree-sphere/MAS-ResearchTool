@@ -1,7 +1,6 @@
 """
 Multi-Agent Research & Content Pipeline
 
-Author: sree-sphere
 Description: Multi-agent system (MAS) using LangGraph for orchestrating research, analysis, and content creation workflows.
 """
 
@@ -12,7 +11,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List
 from uuid import uuid4
-import uvicorn
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -23,6 +21,7 @@ from pydantic import ValidationError
 from src.log import logger
 from src.models.models import PipelineRequest, PipelineResponse, ResearchRequest, ContentOutput
 from src.multi_agent_system import ResearchPipeline
+from src.supervisor_agent import SupervisorAgent
 
 load_dotenv()
 
@@ -45,13 +44,13 @@ app.add_middleware(
 )
 
 # Global state
-research_pipeline = ResearchPipeline()
+supervisor_agent = SupervisorAgent()
 pipeline_results: Dict[str, Dict] = {}
 active_pipelines: Dict[str, bool] = {}
 
 
 async def execute_pipeline_with_callback(pipeline_id: str, research_request: ResearchRequest):
-    """Run pipeline and update progress/result"""
+    """Run intelligent pipeline with supervisor orchestration"""
     try:
         def progress_callback(step: str, progress: int, message: str):
             if pipeline_id in pipeline_results:
@@ -62,7 +61,9 @@ async def execute_pipeline_with_callback(pipeline_id: str, research_request: Res
                     "message": message
                 })
 
-        results = await research_pipeline.execute_pipeline(pipeline_id, research_request, progress_callback)
+        # Use supervisor agent instead of direct pipeline
+        query = research_request.topic
+        results = await supervisor_agent.execute_workflow(query, research_request)
 
         if pipeline_id in pipeline_results:
             end_time = datetime.utcnow()
@@ -72,8 +73,9 @@ async def execute_pipeline_with_callback(pipeline_id: str, research_request: Res
                 "progress": 100,
                 "current_step": "completed",
                 "completed_at": end_time,
-                "execution_time": (end_time - pipeline_results[pipeline_id]["created_at"]).total_seconds(),
-                "agent_metrics": research_pipeline.get_agent_metrics()
+                "execution_time": results.get("execution_time", 0),
+                "routing_info": results.get("routing_decision", {}),
+                "source": results.get("source", "unknown")
             })
 
             output_path = Path("outputs") / f"{pipeline_id}_results.json"
@@ -87,12 +89,52 @@ async def execute_pipeline_with_callback(pipeline_id: str, research_request: Res
                 "status": "failed",
                 "error": str(e)
             })
-            output_path = Path("outputs") / f"{pipeline_id}_error.json"
-            with open(output_path, "w") as f:
-                json.dump(pipeline_results[pipeline_id], f, indent=2, default=str)
     finally:
         active_pipelines.pop(pipeline_id, None)
 
+@app.get("/cache/stats")
+async def get_cache_stats():
+    """Get cache and ChromaDB statistics"""
+    try:
+        rag_stats = supervisor_agent.rag_agent.get_collection_stats()
+        
+        # Get Redis stats
+        redis_info = supervisor_agent.cache_manager.redis_client.info()
+        redis_stats = {
+            "total_keys": redis_info.get("db0", {}).get("keys", 0),
+            "memory_usage": redis_info.get("used_memory_human", "0B")
+        }
+        
+        return {
+            "chromadb": rag_stats,
+            "redis": redis_stats,
+            "status": "healthy"
+        }
+    except Exception as e:
+        return {"error": str(e), "status": "error"}
+
+@app.post("/cache/cleanup")
+async def cleanup_cache():
+    """Cleanup old cache entries"""
+    try:
+        supervisor_agent.cache_manager.cleanup_expired()
+        supervisor_agent.rag_agent.cleanup_old_documents(days_old=7)
+        return {"message": "Cache cleanup completed"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/query/similar/{query}")
+async def find_similar_queries(query: str):
+    """Find similar queries in cache"""
+    try:
+        similar = await supervisor_agent.cache_manager.find_similar_queries(query)
+        return {
+            "query": query,
+            "similar_queries": similar,
+            "count": len(similar)
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/research/start", response_model=PipelineResponse)
 async def start_research_pipeline(request: PipelineRequest, background_tasks: BackgroundTasks):
@@ -215,27 +257,29 @@ async def cancel_pipeline(pipeline_id: str):
 
 @app.get("/agents/status")
 async def get_agent_status():
-    return research_pipeline.get_agent_status()
+    return supervisor_agent.research_pipeline.get_agent_status()
 
 @app.get("/agents/metrics")
 async def get_agent_metrics():
-    return research_pipeline.get_agent_metrics()
-
+    return supervisor_agent.research_pipeline.get_agent_metrics()
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Starting Multi-Agent Research Pipeline")
+    logger.info("Starting Multi-Agent Research Pipeline with Intelligent Routing")
     os.makedirs("outputs", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
-    await research_pipeline.initialize()
-    logger.info("Application started successfully")
+    os.makedirs("chroma_db", exist_ok=True)
+    
+    # Initialize supervisor and all agents
+    await supervisor_agent.research_pipeline.initialize()
+    logger.info("Application started successfully with intelligent routing")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("Shutting down Multi-Agent Research Pipeline")
     for pipeline_id in list(active_pipelines.keys()):
         active_pipelines[pipeline_id] = False
-    await research_pipeline.cleanup()
+    await supervisor_agent.research_pipeline.cleanup()
     logger.info("Application shutdown complete")
 
 def main():
@@ -257,7 +301,8 @@ def main():
         print("Warning: No API key found. Set either OPENAI_API_KEY or ANTHROPIC_API_KEY")
 
     print("Starting server..." if verbose else "")
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
 
 if __name__ == "__main__":
     main()
+    import uvicorn
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")

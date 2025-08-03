@@ -76,21 +76,21 @@ class BaseAgent:
         """Initialize the LLM based on provider"""
         if self.llm_provider == "openai":
             return ChatOpenAI(
-                model=os.getenv("OPENAI_MODEL"),
+                model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
                 temperature=0.3,
                 max_tokens=2000,
                 api_key=os.getenv("OPENAI_API_KEY"),
-                base_url=os.getenv("OPENAI_BASE_URL")
+                base_url=os.getenv("OPENAI_BASE_URL", "")
             )
         elif self.llm_provider == "anthropic":
             return ChatAnthropic(
-                model="claude-3-sonnet-20240229",
+                model=os.getenv("ANTHROPIC_MODEL", "claude-2"),
                 temperature=0.3,
                 max_tokens=2000
             )
         else:
             # Fallback
-            return ChatOpenAI(model="gpt-4-0613", temperature=0.3)
+            return ChatOpenAI(model="gpt-3.5-turbo", temperature=0.3)
     
     def _update_metrics(self, success: bool, execution_time: float):
         """Update agent performance metrics"""
